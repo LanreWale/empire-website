@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Empire Affiliate Marketing Hub</title>
+    <meta name="description" content="Empire Affiliate Marketing Hub connects users with third-party affiliate marketing campaigns.">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --gold-primary: #D4AF37;
+            --gold-light: #F4E4BC;
+            --gold-dark: #AA8C2C;
+            --navy-deep: #0B1120;
+            --navy-mid: #1E293B;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--navy-deep);
+            color: #F8FAFC;
+            overflow-x: hidden;
+        }
+        .font-cinzel { font-family: 'Cinzel', serif; }
+        .text-gold { color: var(--gold-primary); }
+        .text-gold-light { color: var(--gold-light); }
+        .gold-gradient {
+            background: linear-gradient(135deg, #D4AF37 0%, #F4E4BC 50%, #AA8C2C 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .gold-gradient-bg {
+            background: linear-gradient(135deg, #D4AF37 0%, #F4E4BC 50%, #AA8C2C 100%);
+        }
+        .hero-glow {
+            position: absolute;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(212,175,55,0.12) 0%, transparent 70%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .logo-float {
+            animation: float 6s ease-in-out infinite;
+            filter: drop-shadow(0 20px 40px rgba(212,175,55,0.3));
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        .shimmer {
+            position: relative;
+            overflow: hidden;
+        }
+        .shimmer::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            animation: shimmer 3s infinite;
+        }
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(212, 175, 55, 0.1);
+        }
+        .nav-scrolled {
+            background: rgba(11, 17, 32, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+        }
+        .stat-card {
+            background: linear-gradient(145deg, rgba(30,41,59,0.6) 0%, rgba(11,17,32,0.8) 100%);
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            border-color: rgba(212, 175, 55, 0.4);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+        .feature-icon {
+            background: linear-gradient(135deg, rgba(212,175,55,0.1) 0%, rgba(212,175,55,0.05) 100%);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+        }
+        .input-field {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            color: #F8FAFC;
+            transition: all 0.3s ease;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: var(--gold-primary);
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #D4AF37 0%, #AA8C2C 100%);
+            color: #0B1120;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+        }
+        .btn-secondary {
+            border: 1px solid var(--gold-primary);
+            color: var(--gold-primary);
+            transition: all 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background: rgba(212, 175, 55, 0.1);
+            transform: translateY(-2px);
+        }
+        .grid-pattern {
+            background-image: 
+                linear-gradient(rgba(212, 175, 55, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(212, 175, 55, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+        .particle {
+            position: absolute;
+            background: var(--gold-primary);
+            border-radius: 50%;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+        .testimonial-card {
+            background: linear-gradient(145deg, rgba(30,41,59,0.4) 0%, rgba(11,17,32,0.6) 100%);
+            border-left: 3px solid var(--gold-primary);
+        }
+        .step-card {
+            background: rgba(30, 41, 59, 0.3);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            transition: all 0.4s ease;
+        }
+        .step-card:hover {
+            border-color: var(--gold-primary);
+            transform: translateY(-5px);
+        }
+        .step-number {
+            background: linear-gradient(135deg, #D4AF37 0%, #AA8C2C 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-family: 'Cinzel', serif;
+            font-weight: 800;
+        }
+        .trust-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: #94A3B8;
+            font-size: 0.875rem;
+        }
+        .footer-link {
+            color: #94A3B8;
+            transition: color 0.3s ease;
+        }
+        .footer-link:hover {
+            color: var(--gold-primary);
+        }
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        .logo-container {
+            position: relative;
+            display: inline-block;
+        }
+        .logo-glow {
+            position: absolute;
+            inset: -20px;
+            background: radial-gradient(circle, rgba(212,175,55,0.4) 0%, transparent 70%);
+            filter: blur(20px);
+            z-index: -1;
+            opacity: 0.6;
+        }
+        .dashboard-preview {
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+        .disclaimer-box {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            border-radius: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav id="navbar" class="fixed w-full z-50 transition-all duration-300 py-4">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <img src="images/logo-main.jpg" alt="The Empire Logo" class="h-12 w-auto rounded-lg shadow-lg shadow-yellow-500/20">
+                    <span class="font-cinzel text-xl font-bold gold-gradient hidden sm:block">THE EMPIRE</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#what-we-do" class="text-sm font-medium text-slate-300 hover:text-gold">What We Do</a>
+                    <a href="#features" class="text-sm font-medium text-slate-300 hover:text-gold">Features</a>
+                    <a href="#how-it-works" class="text-sm font-medium text-slate-300 hover:text-gold">How It Works</a>
+                    <a href="#testimonials" class="text-sm font-medium text-slate-300 hover:text-gold">Testimonials</a>
+                    <a href="about.html" class="text-sm font-medium text-slate-300 hover:text-gold">About Us</a>
+                    <a href="terms.html" class="text-sm font-medium text-slate-300 hover:text-gold">Terms</a>
+                    <a href="privacy.html" class="text-sm font-medium text-slate-300 hover:text-gold">Privacy</a>
+                    <a href="#contact" class="btn-primary px-6 py-2.5 rounded-full text-sm">Get Started</a>
+                </div>
+                <button id="mobile-menu-btn" class="md:hidden text-gold">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden absolute top-full left-0 w-full bg-slate-900/95 backdrop-blur-lg border-b border-gold/20">
+            <div class="px-4 py-6 space-y-4">
+                <a href="#what-we-do" class="block text-slate-300 hover:text-gold py-2">What We Do</a>
+                <a href="#features" class="block text-slate-300 hover:text-gold py-2">Features</a>
+                <a href="#how-it-works" class="block text-slate-300 hover:text-gold py-2">How It Works</a>
+                <a href="#testimonials" class="block text-slate-300 hover:text-gold py-2">Testimonials</a>
+                <a href="about.html" class="block text-slate-300 hover:text-gold py-2">About Us</a>
+                <a href="terms.html" class="block text-slate-300 hover:text-gold py-2">Terms of Service</a>
+                <a href="privacy.html" class="block text-slate-300 hover:text-gold py-2">Privacy Policy</a>
+                <a href="#contact" class="block btn-primary px-6 py-3 rounded-full text-center mt-4">Get Started</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section class="relative min-h-screen flex items-center justify-center overflow-hidden grid-pattern">
+        <div class="hero-glow"></div>
+        <div id="particles-container" class="absolute inset-0 overflow-hidden pointer-events-none"></div>
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-32 text-center">
+            <div class="logo-float mb-10 logo-container">
+                <div class="logo-glow"></div>
+                <img src="images/logo-main.jpg" alt="The Empire Affiliate Marketing Hub" class="h-40 md:h-56 w-auto mx-auto rounded-2xl shadow-2xl shadow-yellow-500/30 border border-gold/20">
+            </div>
+            <h1 class="font-cinzel text-4xl md:text-6xl lg:text-7xl font-bold mb-4 leading-tight">
+                <span class="gold-gradient">The Empire Affiliate Marketing Hub</span>
+            </h1>
+            <p class="text-xl md:text-2xl text-gold-light font-medium mb-4 tracking-wide">A platform for accessing third-party affiliate marketing campaigns</p>
+            <p class="text-lg text-slate-400 max-w-2xl mx-auto mb-12 leading-relaxed">A digital platform that connects users with third-party affiliate marketing campaigns. Access global offers, track campaign activity, and view performance data from a single dashboard.</p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <a href="#contact" class="btn-primary px-8 py-4 rounded-full text-lg font-semibold shimmer w-full sm:w-auto">Get Started</a>
+                <a href="#platform" class="btn-secondary px-8 py-4 rounded-full text-lg font-semibold w-full sm:w-auto">Explore Platform</a>
+            </div>
+        </div>
+        <div class="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-slate-900 to-transparent"></div>
+    </section>
+
+    <!-- TRUST BAR -->
+    <section class="py-8 bg-slate-900/80 border-y border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 justify-items-center">
+                <div class="trust-item"><i data-lucide="shield-check" class="w-5 h-5 text-gold"></i><span class="font-medium">Campaign Tracking Available</span></div>
+                <div class="trust-item"><i data-lucide="activity" class="w-5 h-5 text-gold"></i><span class="font-medium">Affiliate Activity Monitoring</span></div>
+                <div class="trust-item"><i data-lucide="globe" class="w-5 h-5 text-gold"></i><span class="font-medium">Global Campaign Access</span></div>
+                <div class="trust-item"><i data-lucide="server" class="w-5 h-5 text-gold"></i><span class="font-medium">Reliable Platform Uptime</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- WHAT WE DO -->
+    <section id="what-we-do" class="py-24 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <div class="scroll-reveal">
+                    <h2 class="font-cinzel text-4xl md:text-5xl font-bold mb-6"><span class="gold-gradient">Affiliate Marketing Platform Built for Performance</span></h2>
+                    <div class="space-y-4 text-slate-300 leading-relaxed">
+                        <p>Empire Affiliate Marketing Hub connects users with verified third-party affiliate marketing campaigns.</p>
+                        <p>Users participate in promotional activities such as registrations, sign-ups, and campaign engagements.</p>
+                        <p>Compensation is determined by verified actions completed through affiliate partner networks.</p>
+                        <p>Our platform provides tools to track campaign performance and manage affiliate activity efficiently.</p>
+                    </div>
+                    <div class="mt-8 flex flex-wrap gap-4">
+                        <div class="flex items-center space-x-2 text-gold"><i data-lucide="check-circle" class="w-5 h-5"></i><span class="text-sm font-semibold">Campaign Accessibility</span></div>
+                        <div class="flex items-center space-x-2 text-gold"><i data-lucide="check-circle" class="w-5 h-5"></i><span class="text-sm font-semibold">Performance Tracking</span></div>
+                        <div class="flex items-center space-x-2 text-gold"><i data-lucide="check-circle" class="w-5 h-5"></i><span class="text-sm font-semibold">Activity Management</span></div>
+                    </div>
+                </div>
+                <div class="scroll-reveal"><div class="dashboard-preview"><img src="images/dashboard-welcome.png" alt="Dashboard" class="w-full h-auto"></div></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CORE FEATURES -->
+    <section id="features" class="py-24 bg-slate-900/50 relative overflow-hidden">
+        <div class="absolute inset-0 grid-pattern opacity-50"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center mb-16 scroll-reveal">
+                <h2 class="font-cinzel text-4xl md:text-5xl font-bold mb-4"><span class="gold-gradient">Core Features</span></h2>
+                <p class="text-slate-400 text-lg max-w-2xl mx-auto">Tools designed to support your affiliate campaign participation.</p>
+            </div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="stat-card rounded-2xl p-8 scroll-reveal"><div class="feature-icon w-14 h-14 rounded-xl flex items-center justify-center mb-6"><i data-lucide="layout-dashboard" class="w-7 h-7 text-gold"></i></div><h3 class="text-xl font-bold text-white mb-3">Campaign Tracking Dashboard</h3><p class="text-slate-400 leading-relaxed">Monitor clicks, conversions, and campaign activity through a structured interface.</p></div>
+                <div class="stat-card rounded-2xl p-8 scroll-reveal"><div class="feature-icon w-14 h-14 rounded-xl flex items-center justify-center mb-6"><i data-lucide="globe" class="w-7 h-7 text-gold"></i></div><h3 class="text-xl font-bold text-white mb-3">Global Campaign Access</h3><p class="text-slate-400 leading-relaxed">Browse affiliate campaigns across multiple regions and industries.</p></div>
+                <div class="stat-card rounded-2xl p-8 scroll-reveal"><div class="feature-icon w-14 h-14 rounded-xl flex items-center justify-center mb-6"><i data-lucide="bar-chart-3" class="w-7 h-7 text-gold"></i></div><h3 class="text-xl font-bold text-white mb-3">Performance Analytics</h3><p class="text-slate-400 leading-relaxed">View engagement data and campaign metrics to understand activity trends.</p></div>
+                <div class="stat-card rounded-2xl p-8 scroll-reveal"><div class="feature-icon w-14 h-14 rounded-xl flex items-center justify-center mb-6"><i data-lucide="link" class="w-7 h-7 text-gold"></i></div><h3 class="text-xl font-bold text-white mb-3">Affiliate Link Management</h3><p class="text-slate-400 leading-relaxed">Generate and manage unique tracking links for campaign participation.</p></div>
+                <div class="stat-card rounded-2xl p-8 scroll-reveal"><div class="feature-icon w-14 h-14 rounded-xl flex items-center justify-center mb-6"><i data-lucide="shield" class="w-7 h-7 text-gold"></i></div><h3 class="text-xl font-bold text-white mb-3">Platform Security</h3><p class="text-slate-400 leading-relaxed">Standard verification processes are applied to maintain platform integrity and activity quality.</p></div>
+                <div class="stat-card rounded-2xl p-8 scroll-reveal"><div class="feature-icon w-14 h-14 rounded-xl flex items-center justify-center mb-6"><i data-lucide="headphones" class="w-7 h-7 text-gold"></i></div><h3 class="text-xl font-bold text-white mb-3">Support Services</h3><p class="text-slate-400 leading-relaxed">Access onboarding and platform support when needed.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section id="how-it-works" class="py-24 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16 scroll-reveal"><h2 class="font-cinzel text-4xl md:text-5xl font-bold mb-4"><span class="gold-gradient">Simple Process to Get Started</span></h2></div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="step-card rounded-2xl p-8 text-center scroll-reveal"><div class="step-number text-5xl mb-4">01</div><h3 class="text-xl font-bold text-white mb-2">Create an Account</h3><p class="text-slate-400">Sign up to access the affiliate platform.</p></div>
+                <div class="step-card rounded-2xl p-8 text-center scroll-reveal"><div class="step-number text-5xl mb-4">02</div><h3 class="text-xl font-bold text-white mb-2">Browse Campaigns</h3><p class="text-slate-400">Select available affiliate campaigns based on your preference.</p></div>
+                <div class="step-card rounded-2xl p-8 text-center scroll-reveal"><div class="step-number text-5xl mb-4">03</div><h3 class="text-xl font-bold text-white mb-2">Participate</h3><p class="text-slate-400">Share campaign links using provided tracking identifiers.</p></div>
+                <div class="step-card rounded-2xl p-8 text-center scroll-reveal"><div class="step-number text-5xl mb-4">04</div><h3 class="text-xl font-bold text-white mb-2">Track Activity</h3><p class="text-slate-400">Monitor campaign performance and engagement through your dashboard.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PLATFORM POSITIONING -->
+    <section id="platform" class="py-24 bg-slate-900/50 relative overflow-hidden">
+        <div class="absolute inset-0 grid-pattern opac
