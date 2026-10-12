@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#facc15">
+<title>Twitter Authorization — Empire Rewards</title>
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --surface-light: #334155;
+  --accent: #facc15;
+  --accent-hover: #eab308;
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --success: #10b981;
+  --error: #ef4444;
+  --border: rgba(250, 204, 21, 0.15);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  font-family: 'DM Mono', monospace;
+  background: linear-gradient(135deg, var(--bg) 0%, var(--surface) 50%, var(--surface-light) 100%);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+}
+.card {
+  background: rgba(30, 41, 59, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 44px 36px;
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  animation: fadeUp .6s ease forwards;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.emoji {
+  font-size: 2.8rem;
+  margin-bottom: 16px;
+  display: block;
+}
+h1 {
+  font-family: 'Instrument Serif', serif;
+  color: var(--accent);
+  font-size: 1.5rem;
+  font-weight: 400;
+  margin-bottom: 10px;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+p {
+  color: var(--text-secondary);
+  line-height: 1.7;
+  font-size: .82rem;
+  margin-bottom: 20px;
+}
+.btn {
+  display: inline-block;
+  padding: 13px 32px;
+  background: var(--accent);
+  color: var(--bg);
+  text-decoration: none;
+  border-radius: 10px;
+  font-family: 'DM Mono', monospace;
+  font-weight: 600;
+  font-size: .85rem;
+  border: none;
+  cursor: pointer;
+  transition: background .2s ease, transform .2s ease, opacity .2s ease;
+  letter-spacing: .02em;
+}
+.btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 100px;
+  font-size: .68rem;
+  font-weight: 600;
+  margin-top: 12px;
+  letter-spacing: .01em;
+}
+.status.success { background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.25); color: var(--success); }
+.status.error { background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); color: var(--error); }
+.status.loading { background: rgba(250, 204, 21, 0.12); border: 1px solid rgba(250, 204, 21, 0.25); color: var(--accent); }
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(250, 204, 21, 0.3);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.spinner.lg {
+  width: 40px;
+  height: 40px;
+  border-width: 3px;
+  margin-bottom: 16px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.details {
+  margin-top: 16px;
+  padding: 12px;
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 8px;
+  font-size: .65rem;
+  color: var(--text-muted);
+  text-align: left;
+  word-break: break-all;
+  display: none;
+  line-height: 1.6;
+}
+.details.show { display: block; }
+.view { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  .card { opacity: 1; }
+}
+@media (max-width: 480px) {
+  .card { padding: 32px 20px; }
+  h1 { font-size: 1.25rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+
+  <!-- View: Initial Authorization -->
+  <div id="view-init" class="view">
+    <span class="emoji" role="img" aria-label="Bird">&#128038;</span>
+    <h1>Connect Twitter</h1>
+    <p>Authorize Empire Rewards to post tweets automatically on your behalf. You only need to do this once.</p>
+    <button class="btn" id="authBtn" aria-label="Authorize on Twitter">Authorize on Twitter</button>
+    <div id="initStatus"></div>
+  </div>
+
+  <!-- View: Exchanging Code -->
+  <div id="view-exchanging" class="view">
+    <div class="spinner lg" aria-hidden="true"></div>
+    <h1>Connecting...</h1>
+    <p>Exchanging authorization code for tokens. This takes a few seconds.</p>
+  </div>
+
+  <!-- View: Success -->
+  <div id="view-success" class="view">
+    <span class="emoji" role="img" aria-label="Checkmark">&#9989;</span>
+    <h1>Twitter Connected</h1>
+    <p>Empire Rewards is now authorized to post tweets automatically. You can close this tab.</p>
+    <div class="status success">&#10003; Automation is live</div>
+  </div>
+
+  <!-- View: Error -->
+  <div id="view-error" class="view">
+    <span class="emoji" role="img" aria-label="Error">&#10060;</span>
+    <h1>Something Went Wrong</h1>
+    <p id="errorMsg">An error occurred. Please try again.</p>
+    <button class="btn" id="retryBtn" aria-label="Try again">Try Again</button>
+    <div class="status error" id="errorStatus"></div>
+    <div class="details" id="errorDetails"></div>
+  </div>
+
+</div>
+
+<!-- Shared tracker — must load BEFORE the OAuth script so all events land in Supabase -->
+<script src="/assets/js/attribution.js"></script>
+
+<script>
+(function () {
+    'use strict';
+
+    // ── Config ──
+    var SUPABASE_URL = 'https://qujlyrmatuvlpoeheqgf.supabase.co';
+    var ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF1amx5cm1hdHV2bHBvZWhlcWdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwOTE5NDUsImV4cCI6MjA2NzY2Nzk0NX0.PgIRCU_-r6o-u6AIhj52FE1iezdwt3wpi-a9zQvAdsc';
+    var FUNCTION_URL = SUPABASE_URL + '/functions/v1/twitter-auth';
+
+    // ── CSRF State Management ──
+    function generateState() {
+        var array = new Uint8Array(32);
+        crypto.getRandomValues(array);
+        return Array.from(array, function (b) { return b.toString(16).padStart(2, '0'); }).join('');
+    }
+
+    function storeState(state) {
+        try { sessionStorage.setItem('twitter_oauth_state', state); } catch (e) {}
+    }
+
+    function getStoredState() {
+        try { return sessionStorage.getItem('twitter_oauth_state') || ''; } catch (e) { return ''; }
+    }
+
+    function clearStoredState() {
+        try { sessionStorage.removeItem('twitter_oauth_state'); } catch (e) {}
+    }
+
+    // ── Track — delegates to attribution.js which is loaded above ──
+    function track(eventType, data) {
+        try {
+            if (typeof window.empireTrack === 'function') {
+                window.empireTrack(eventType, data || {});
+            }
+        } catch (e) {}
+    }
+
+    // ── UI Helpers ──
+    function showView(name) {
+        var views = document.querySelectorAll('.view');
+        for (var i = 0; i < views.length; i++) views[i].style.display = 'none';
+        var target = document.getElementById('view-' + name);
+        if (target) target.style.display = 'block';
+    }
+
+    function showInitError(msg) {
+        var el = document.getElementById('initStatus');
+        if (el) el.innerHTML = '<div class="status error">' + escapeHtml(msg) + '</div>';
+    }
+
+    function escapeHtml(str) {
+        var div = document.createElement('div');
+        div.appendChild(document.createTextNode(str));
+        return div.innerHTML;
+    }
+
+    // ── Edge Function Call — uses POST to keep auth codes out of URLs ──
+    function callFunction(body) {
+        var options = {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + ANON_KEY,
+                'apikey': ANON_KEY,
+                'Content-Type': 'application/json'
+            }
+        };
+        if (body) options.body = JSON.stringify(body);
+
+        return fetch(FUNCTION_URL, options).then(function (res) {
+            if (!res.ok) {
+                return res.text().then(function (text) {
+                    var parsed;
+                    try { parsed = JSON.parse(text); } catch (e) { parsed = null; }
+                    var message = (parsed && parsed.error) || text || ('Server error: HTTP ' + res.status);
+                    throw new Error(message);
+                });
+            }
+            return res.json();
+        });
+    }
+
+    // ── Start OAuth Flow ──
+    function startAuth() {
+        var btn = document.getElementById('authBtn');
+        if (btn) btn.disabled = true;
+
+        var statusEl = document.getElementById('initStatus');
+        if (statusEl) {
+            statusEl.innerHTML = '<div class="status loading"><div class="spinner" aria-hidden="true"></div> Getting authorization URL...</div>';
+        }
+
+        track('twitter_auth_start');
+
+        var state = generateState();
+        storeState(state);
+
+        callFunction({ action: 'get_auth_url', state: state })
+            .then(function (data) {
+                if (data.auth_url) {
+                    track('twitter_auth_redirect');
+                    window.location.href = data.auth_url;
+                } else {
+                    throw new Error(data.error || 'No authorization URL returned');
+                }
+            })
+            .catch(function (err) {
+                if (btn) btn.disabled = false;
+                showInitError('Failed: ' + err.message);
+                track('twitter_auth_error', { error: err.message, stage: 'start' });
+            });
+    }
+
+    // ── Exchange Authorization Code ──
+    function exchangeCode(code, returnedState) {
+        var storedState = getStoredState();
+        if (!storedState || storedState !== returnedState) {
+            showView('error');
+            document.getElementById('errorMsg').textContent = 'Security verification failed. Please try the authorization flow again.';
+            document.getElementById('errorStatus').textContent = 'CSRF state mismatch';
+            track('twitter_auth_error', { error: 'CSRF state mismatch', stage: 'exchange' });
+            clearStoredState();
+            return;
+        }
+        clearStoredState();
+
+        showView('exchanging');
+        track('twitter_auth_exchange');
+
+        callFunction({ action: 'exchange_code', code: code })
+            .then(function (data) {
+                if (data.success) {
+                    showView('success');
+                    track('twitter_auth_success');
+                } else {
+                    throw new Error(data.error || 'Unknown error during token exchange');
+                }
+            })
+            .catch(function (err) {
+                document.getElementById('errorMsg').textContent = err.message;
+                document.getElementById('errorStatus').textContent = err.message;
+                showView('error');
+                track('twitter_auth_error', { error: err.message, stage: 'exchange' });
+            });
+    }
+
+    // ── Wire up buttons ──
+    var authBtn = document.getElementById('authBtn');
+    if (authBtn) authBtn.addEventListener('click', startAuth);
+
+    var retryBtn = document.getElementById('retryBtn');
+    if (retryBtn) retryBtn.addEventListener('click', function () {
+        showView('init');
+        startAuth();
+    });
+
+    // ── On page load: check for OAuth callback ──
+    (function () {
+        var params = new URLSearchParams(window.location.search);
+        var code = params.get('code');
+        var state = params.get('state');
+
+        if (code) {
+            // Strip code and state from URL immediately
+            window.history.replaceState({}, document.title, window.location.pathname);
+            exchangeCode(code, state);
+        } else {
+            showView('init');
+        }
+    })();
+
+})();
+</script>
+
+</body>
+</html>

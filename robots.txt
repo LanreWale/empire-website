@@ -1,0 +1,34 @@
+# ═══════════════════════════════════════════════════════════
+# THE EMPIRE — robots.txt
+# ═══════════════════════════════════════════════════════════
+
+# ── All crawlers ──
+User-agent: *
+Disallow: /kimi.html
+Disallow: /command-center.html
+Disallow: /postback.html
+Disallow: /twitter-auth.html
+Disallow: /dashboard.html
+Disallow: /kyc/
+Disallow: /admin/
+Disallow: /portal/
+Disallow: /api/
+Disallow: /downloads/private/
+
+# ── Google Ads crawlers — full access for ad verification ──
+User-agent: AdsBot-Google
+Allow: /
+
+User-agent: AdsBot-Google-Mobile
+Allow: /
+
+# ── Google Search — full access to public pages ──
+User-agent: Googlebot
+Allow: /
+Disallow: /command-center.html
+Disallow: /postback.html
+Disallow: /twitter-auth.html
+Disallow: /api/
+
+# ── Sitemap ──
+Sitemap: https://empireaffiliatemarketinghub.com/sitemap.xml

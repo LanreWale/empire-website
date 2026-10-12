@@ -1,0 +1,10 @@
+﻿# Empire — local backups (do not commit)
+*.backup_*
+*.deleted_*
+*_backup_*
+offers_backup_*
+_backup_pins_*
+node_modules/
+.vscode/
+.DS_Store
+Thumbs.db

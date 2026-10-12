@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Empire Command Center</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0b0b0f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Serif+Display&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0b0b0f;
+  --surface: #14141a;
+  --surface-alt: #1c1c24;
+  --accent: #2980b9;
+  --gold: #d4a843;
+  --red: #c0392b;
+  --purple: #8e44ad;
+  --green: #27ae60;
+  --text-primary: #f0ece4;
+  --text-muted: #8a8578;
+  --text-dim: #5a5650;
+  --border: #2a2a32;
+  --success: #4caf50;
+  --warning: #f39c12;
+  --danger: #e74c3c;
+  --radius: 6px;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text-primary);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  background-image: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(41,128,185,0.06), transparent 70%);
+}
+
+/* ══════════ PASSWORD GATE ══════════ */
+#gate-screen {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 99999; padding: 24px;
+  background-image: radial-gradient(ellipse 70% 50% at 50% 30%, rgba(41,128,185,0.08), transparent 65%);
+}
+.gate-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 3rem 2.5rem;
+  max-width: 420px; width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+.gate-mark {
+  width: 64px; height: 64px; margin: 0 auto 1.5rem;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--accent), #1a5276);
+  color: #fff; font-family: 'DM Serif Display', serif;
+  font-size: 1.8rem; font-weight: 700; border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(41,128,185,0.35);
+}
+.gate-card h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.5rem; font-weight: 400;
+  color: var(--accent); margin-bottom: 0.5rem;
+}
+.gate-card p { color: var(--text-dim); font-size: 0.82rem; margin-bottom: 1.75rem; }
+.gate-input {
+  width: 100%; padding: 12px 16px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-primary);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.85rem; letter-spacing: 0.05em; text-align: center;
+  transition: border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+.gate-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(41,128,185,0.2); }
+.gate-btn {
+  width: 100%; margin-top: 1rem; padding: 12px 24px;
+  background: linear-gradient(135deg, var(--accent), #1a5276);
+  color: #fff; border: none; border-radius: var(--radius);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.85rem; font-weight: 700; letter-spacing: 0.04em;
+  cursor: pointer; transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+.gate-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(41,128,185,0.3); }
+.gate-error { color: var(--danger); font-size: 0.72rem; margin-top: 0.75rem; min-height: 1.1em; }
+.gate-hint { color: var(--text-dim); font-size: 0.66rem; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border); line-height: 1.6; }
+
+/* ══════════ APP ══════════ */
+#app { display: none; }
+#app.unlocked { display: block; }
+
+.top-bar {
+  background: rgba(20,20,26,0.9);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+  gap: 16px; flex-wrap: wrap;
+}
+.top-bar .brand { display: flex; align-items: center; gap: 12px; }
+.top-bar .brand-mark {
+  width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--accent), #1a5276);
+  color: #fff; font-family: 'DM Serif Display', serif;
+  font-weight: 700; font-size: 1rem; border-radius: 8px;
+  box-shadow: 0 0 20px rgba(41,128,185,0.3);
+}
+.top-bar h1 { font-family: 'DM Serif Display', serif; font-size: 1.1rem; font-weight: 400; color: var(--accent); line-height: 1.2; }
+.top-bar .brand-sub { font-size: 0.62rem; color: var(--text-dim); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 2px; }
+.top-bar .status {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.7rem; color: var(--text-muted);
+  padding: 6px 12px; background: var(--bg);
+  border: 1px solid var(--border); border-radius: 100px;
+}
+.top-bar .status .dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--success); animation: pulse 2s infinite;
+}
+.top-bar .status .dot.error { background: var(--danger); animation: none; }
+@keyframes pulse { 0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(76,175,80,0.5); } 50% { opacity: 0.6; box-shadow: 0 0 0 6px rgba(76,175,80,0); } }
+
+.tabs {
+  display: flex; background: rgba(20,20,26,0.7);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px; position: sticky; top: 62px; z-index: 99;
+  overflow-x: auto; gap: 4px;
+}
+.tab {
+  padding: 14px 20px; font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-dim); cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.25s var(--ease); white-space: nowrap; user-select: none;
+}
+.tab:hover { color: var(--text-muted); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.content { padding: 28px 24px 80px; max-width: 1300px; margin: 0 auto; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; animation: fadeUp 0.4s var(--ease); }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+.section-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.2rem; font-weight: 400;
+  margin: 32px 0 8px; color: var(--text-primary);
+  padding-bottom: 10px; border-bottom: 1px solid var(--border);
+}
+.section-title:first-child { margin-top: 0; }
+.section-desc { color: var(--text-dim); font-size: 0.78rem; margin-bottom: 20px; line-height: 1.65; }
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px; margin-bottom: 28px;
+}
+.kpi-card {
+  background: linear-gradient(145deg, var(--surface), var(--surface-alt));
+  border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 22px 20px;
+  position: relative; overflow: hidden;
+  transition: all 0.25s var(--ease);
+}
+.kpi-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--accent), #5dade2, #1a5276);
+  opacity: 0.7;
+}
+.kpi-card:hover { border-color: rgba(41,128,185,0.4); transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.35); }
+.kpi-card .kpi-label { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 10px; }
+.kpi-card .kpi-value { font-family: 'DM Serif Display', serif; font-size: 2rem; font-weight: 400; color: var(--text-primary); line-height: 1; }
+.kpi-card .kpi-value.gold { color: var(--gold); }
+.kpi-card .kpi-sub { font-size: 0.66rem; color: var(--text-dim); margin-top: 8px; }
+
+.data-table {
+  width: 100%; border-collapse: collapse; margin-bottom: 28px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;
+}
+.data-table th {
+  text-align: left; font-size: 0.62rem; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim);
+  padding: 12px 16px; border-bottom: 1px solid var(--border); background: rgba(11,11,15,0.5);
+}
+.data-table td { padding: 12px 16px; font-size: 0.78rem; border-bottom: 1px solid var(--border); color: var(--text-muted); }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: rgba(41,128,185,0.04); }
+
+.status-badge {
+  display: inline-block; padding: 3px 10px; border-radius: 100px;
+  font-size: 0.6rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+}
+.status-badge.live { background: rgba(76,175,80,0.15); color: var(--success); }
+.status-badge.pending { background: rgba(243,156,18,0.15); color: var(--warning); }
+.status-badge.broken { background: rgba(231,76,60,0.15); color: var(--danger); }
+.status-badge.pageview { background: rgba(41,128,185,0.15); color: var(--accent); }
+
+.article-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 22px; margin-bottom: 16px;
+  transition: border-color 0.25s var(--ease);
+}
+.article-card:hover { border-color: rgba(41,128,185,0.25); }
+.article-card h3 { font-family: 'DM Serif Display', serif; font-size: 1rem; font-weight: 400; margin-bottom: 14px; }
+.article-card .meta-row { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 12px; }
+.article-card .meta-item { font-size: 0.72rem; color: var(--text-dim); }
+.article-card .meta-item strong { color: var(--text-primary); font-weight: 500; }
+.article-card .checks { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.check-tag { font-size: 0.62rem; font-weight: 700; padding: 3px 10px; border-radius: 100px; letter-spacing: 0.04em; }
+.check-tag.ok { background: rgba(76,175,80,0.12); color: var(--success); }
+.check-tag.warn { background: rgba(243,156,18,0.12); color: var(--warning); }
+.check-tag.fail { background: rgba(231,76,60,0.12); color: var(--danger); }
+.article-card .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.btn {
+  padding: 8px 16px; border: 1px solid var(--border);
+  background: var(--surface-alt); color: var(--text-muted);
+  border-radius: var(--radius); font-family: 'DM Mono', monospace;
+  font-size: 0.7rem; font-weight: 500; letter-spacing: 0.04em;
+  cursor: pointer; transition: all 0.2s var(--ease);
+  text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+}
+.btn:hover { color: var(--accent); border-color: var(--accent); transform: translateY(-1px); }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn.primary { background: linear-gradient(135deg, var(--accent), #1a5276); color: #fff; border-color: var(--accent); font-weight: 700; }
+.btn.primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(41,128,185,0.25); color: #fff; }
+.btn.copied { background: var(--success) !important; color: #fff !important; border-color: var(--success) !important; }
+.btn.medium-btn { background: #00ab6c; color: #fff; border-color: #00ab6c; }
+.btn.medium-btn:hover { background: #00c47a; color: #fff; }
+.btn.quora-btn { background: #a82400; color: #fff; border-color: #a82400; }
+.btn.quora-btn:hover { background: #c02b00; color: #fff; }
+.btn.reddit-btn { background: #ff4500; color: #fff; border-color: #ff4500; }
+.btn.reddit-btn:hover { background: #ff571a; color: #fff; }
+.btn.twitter-btn { background: #1da1f2; color: #fff; border-color: #1da1f2; }
+.btn.twitter-btn:hover { background: #38b0f5; color: #fff; }
+
+.mono { font-family: 'DM Mono', monospace; font-size: 0.7rem; color: var(--text-dim); word-break: break-all; }
+
+.sub-tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--border); overflow-x: auto; }
+.sub-tab {
+  padding: 10px 18px; font-size: 0.7rem; font-weight: 500;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--text-dim); cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s var(--ease); white-space: nowrap; user-select: none;
+}
+.sub-tab:hover { color: var(--text-muted); }
+.sub-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.sub-panel { display: none; }
+.sub-panel.active { display: block; animation: fadeUp 0.3s var(--ease); }
+
+.content-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px; margin-bottom: 16px;
+  transition: border-color 0.25s var(--ease);
+}
+.content-card:hover { border-color: rgba(41,128,185,0.25); }
+.content-card .tag {
+  display: inline-block; font-size: 0.58rem; font-weight: 700;
+  letter-spacing: 0.1em; padding: 3px 10px; border-radius: 100px;
+  margin-bottom: 10px; text-transform: uppercase;
+}
+.content-card h3 { font-family: 'DM Serif Display', serif; font-size: 0.95rem; font-weight: 400; margin-bottom: 8px; color: var(--text-primary); }
+.content-card .target { font-size: 0.7rem; color: var(--text-dim); margin-bottom: 12px; }
+.content-card .target strong { color: var(--accent); font-weight: 500; }
+.content-card pre {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px;
+  font-family: 'DM Mono', monospace; font-size: 0.72rem;
+  color: var(--text-muted); line-height: 1.65;
+  white-space: pre-wrap; word-wrap: break-word;
+  max-height: 320px; overflow-y: auto; margin-bottom: 14px;
+}
+.content-card pre::-webkit-scrollbar { width: 6px; }
+.content-card pre::-webkit-scrollbar-track { background: transparent; }
+.content-card pre::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.content-card .card-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.content-card .posted-toggle {
+  font-size: 0.65rem; color: var(--text-dim); cursor: pointer;
+  padding: 7px 12px; border: 1px dashed var(--border);
+  border-radius: var(--radius); transition: all 0.2s var(--ease); user-select: none;
+}
+.content-card .posted-toggle:hover { border-color: var(--accent); color: var(--accent); }
+.content-card .posted-toggle.active {
+  color: var(--success); border-color: var(--success);
+  border-style: solid; background: rgba(76,175,80,0.06);
+}
+
+.progress-row {
+  display: flex; align-items: center; gap: 14px; margin-bottom: 24px;
+  padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+}
+.progress-bar { flex: 1; height: 6px; background: var(--bg); border-radius: 100px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), #5dade2); border-radius: 100px; transition: width 0.6s var(--ease); }
+.progress-label { font-size: 0.7rem; color: var(--text-muted); white-space: nowrap; letter-spacing: 0.02em; }
+
+.toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: var(--success); color: #fff;
+  padding: 14px 24px; border-radius: var(--radius);
+  font-size: 0.78rem; font-weight: 500;
+  transform: translateY(100px); opacity: 0;
+  transition: all 0.35s var(--ease); z-index: 1000;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.4); letter-spacing: 0.02em;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+
+@media (max-width: 720px) {
+  .top-bar { padding: 12px 16px; }
+  .tabs { padding: 0 12px; top: 58px; }
+  .tab { padding: 12px 14px; font-size: 0.66rem; }
+  .content { padding: 20px 16px 60px; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .kpi-card { padding: 18px 16px; }
+  .kpi-card .kpi-value { font-size: 1.6rem; }
+  .data-table th, .data-table td { padding: 10px 12px; font-size: 0.72rem; }
+  .gate-card { padding: 2.5rem 1.75rem; }
+  .toast { left: 16px; right: 16px; bottom: 16px; text-align: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-delay: 0ms !important; transition-duration: 0.01ms !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════ PASSWORD GATE ══════════ -->
+<div id="gate-screen">
+  <div class="gate-card">
+    <div class="gate-mark">E</div>
+    <h1>Command Center</h1>
+    <p>Private dashboard. Enter access password to continue.</p>
+    <input type="password" id="gate-input" class="gate-input" placeholder="Enter password" autocomplete="current-password" aria-label="Access password">
+    <button type="button" id="gate-btn" class="gate-btn">Unlock</button>
+    <div class="gate-error" id="gate-error" role="alert"></div>
+    <div class="gate-hint">Session persists for 12 hours. If you forget the password, clear browser storage or use a private window.</div>
+  </div>
+</div>
+
+<!-- ══════════ APP ══════════ -->
+<div id="app">
+  <div class="top-bar">
+    <div class="brand">
+      <div class="brand-mark">E</div>
+      <div>
+        <h1>Empire Command Center</h1>
+        <div class="brand-sub">THE EMPIRE · Internal Dashboard</div>
+      </div>
+    </div>
+    <div class="status">
+      <div class="dot" id="status-dot"></div>
+      <span id="last-refresh">Connecting...</span>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="overview">Overview</div>
+    <div class="tab" data-tab="offers">Offers</div>
+    <div class="tab" data-tab="content">Content</div>
+    <div class="tab" data-tab="seo">SEO</div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="content">
+
+    <!-- ═════════════ OVERVIEW ═════════════ -->
+    <div class="tab-panel active" id="panel-overview">
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-label">Total Pageviews</div><div class="kpi-value gold" id="kpi-pageviews">--</div><div class="kpi-sub">All time</div></div>
+        <div class="kpi-card"><div class="kpi-label">Offer Clicks</div><div class="kpi-value gold" id="kpi-clicks">--</div><div class="kpi-sub">CTA opens</div></div>
+        <div class="kpi-card"><div class="kpi-label">Click Rate</div><div class="kpi-value" id="kpi-rate">--%</div><div class="kpi-sub">Clicks / Pageviews</div></div>
+        <div class="kpi-card"><div class="kpi-label">Unique Pages</div><div class="kpi-value" id="kpi-pages">--</div><div class="kpi-sub">Visited</div></div>
+      </div>
+      <h2 class="section-title">Traffic By Page</h2>
+      <table class="data-table"><thead><tr><th>Page</th><th>Views</th><th>Offer Clicks</th><th>Rate</th></tr></thead><tbody id="table-pages"></tbody></table>
+      <h2 class="section-title">Device Breakdown</h2>
+      <table class="data-table"><thead><tr><th>Device</th><th>Views</th><th>Share</th></tr></thead><tbody id="table-devices"></tbody></table>
+      <h2 class="section-title">Country Breakdown</h2>
+      <table class="data-table"><thead><tr><th>Country</th><th>Views</th><th>Share</th></tr></thead><tbody id="table-countries"></tbody></table>
+      <h2 class="section-title">Recent Activity</h2>
+      <table class="data-table"><thead><tr><th>Time</th><th>Event</th><th>Page</th><th>Device</th><th>Country</th></tr></thead><tbody id="table-recent"></tbody></table>
+    </div>
+
+    <!-- ═════════════ OFFERS ═════════════ -->
+    <div class="tab-panel" id="panel-offers">
+      <h2 class="section-title">Offer Page Status</h2>
+      <p class="section-desc">CPAGrip offer configurations and performance for all 20 landing pages.</p>
+      <div id="offers-list"></div>
+      <h2 class="section-title">Revenue Tracking</h2>
+      <div class="content-card">
+        <p style="font-size:0.78rem;color:var(--text-dim);line-height:1.65;">Revenue data appears once conversions start. Your CPA network (e.g., CPAGrip) reports earnings in their dashboard.</p>
+        <div class="kpi-grid" style="margin-top:20px;margin-bottom:0;">
+          <div class="kpi-card"><div class="kpi-label">Today</div><div class="kpi-value">$0.00</div></div>
+          <div class="kpi-card"><div class="kpi-label">This Week</div><div class="kpi-value">$0.00</div></div>
+          <div class="kpi-card"><div class="kpi-label">This Month</div><div class="kpi-value">$0.00</div></div>
+          <div class="kpi-card"><div class="kpi-label">Total</div><div class="kpi-value">$0.00</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═════════════ CONTENT ═════════════ -->
+    <div class="tab-panel" id="panel-content">
+      <h2 class="section-title">Content Command Center</h2>
+      <p class="section-desc">Pre-written content ready to copy and post. Click any button to copy to clipboard, then paste into the platform. Track what's been posted.</p>
+      <div id="posting-progress"></div>
+      <div class="sub-tabs">
+        <div class="sub-tab active" data-sub="medium">Medium</div>
+        <div class="sub-tab" data-sub="quora">Quora</div>
+        <div class="sub-tab" data-sub="reddit">Reddit</div>
+        <div class="sub-tab" data-sub="twitter">Twitter</div>
+      </div>
+      <div class="sub-panel active" id="sub-medium"></div>
+      <div class="sub-panel" id="sub-quora"></div>
+      <div class="sub-panel" id="sub-reddit"></div>
+      <div class="sub-panel" id="sub-twitter"></div>
+    </div>
+
+    <!-- ═════════════ SEO ═════════════ -->
+    <div class="tab-panel" id="panel-seo">
+      <h2 class="section-title">SEO Status</h2>
+      <p class="section-desc">Google Search Console indexing status for all public pages.</p>
+      <table class="data-table"><thead><tr><th>URL</th><th>Sitemap</th><th>Inspect</th></tr></thead><tbody id="seo-table"></tbody></table>
+      <h2 class="section-title">Quick Links</h2>
+      <div class="content-card">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <a href="https://search.google.com/search-console" target="_blank" rel="noopener" class="btn">Google Search Console</a>
+          <a href="https://pagespeed.web.dev/" target="_blank" rel="noopener" class="btn">PageSpeed Test</a>
+          <a href="https://www.bing.com/webmasters" target="_blank" rel="noopener" class="btn">Bing Webmaster</a>
+        </div>
+      </div>
+      <h2 class="section-title">Indexing Checklist</h2>
+      <div class="content-card">
+        <p style="font-size:0.78rem;color:var(--text-dim);margin-bottom:12px;">Use URL Inspection in Google Search Console. Click "Request Indexing" for each URL. Check the box once confirmed indexed.</p>
+        <div id="indexing-checklist"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ======================== CONFIG ========================
+var SB_URL = 'https://qujlyrmatuvlpoeheqgf.supabase.co';
+var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF1amx5cm1hdHV2bHBvZWhlcWdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwOTE5NDUsImV4cCI6MjA2NzY2Nzk0NX0.PgIRCU_-r6o-u6AIhj52FE1iezdwt3wpi-a9zQvAdsc';
+var BASE = 'https://empireaffiliatemarketinghub.com';
+var PASSWORD = 'empire2024';
+
+// ======================== PASSWORD GATE ========================
+(function() {
+  var gate = document.getElementById('gate-screen');
+  var app = document.getElementById('app');
+  var input = document.getElementById('gate-input');
+  var btn = document.getElementById('gate-btn');
+  var err = document.getElementById('gate-error');
+
+  function unlock() {
+    gate.style.display = 'none';
+    app.classList.add('unlocked');
+    sessionStorage.setItem('empire_unlocked', 'true');
+    initDashboard();
+  }
+
+  function tryUnlock() {
+    if (input.value === PASSWORD) {
+      err.textContent = '';
+      unlock();
+    } else {
+      err.textContent = 'Incorrect password. Try again.';
+      input.value = '';
+      input.focus();
+    }
+  }
+
+  btn.addEventListener('click', tryUnlock);
+  input.addEventListener('keydown', function(e) { if (e.key === 'Enter') tryUnlock(); });
+
+  if (sessionStorage.getItem('empire_unlocked') === 'true') {
+    unlock();
+  } else {
+    input.focus();
+  }
+})();
+
+// ======================== ALL 20 OFFERS ========================
+var OFFERS = [
+  { id: 'meal-prep', name: 'Budget Meal Prep Guide', icon: '🍱', color: '#b45309', offerPage: '/offers/budget-meal-prep-guide.html', category: 'Lifestyle', offerIds: ['74437','75217','74923','75159','75158','73895','73942','49886','74133'], scriptDomain: 'singingfiles.com', status: 'live' },
+  { id: 'diy-decor', name: 'DIY Home Decor Ideas', icon: '🏠', color: '#c2410c', offerPage: '/offers/diy-home-decor-ideas.html', category: 'Lifestyle', offerIds: ['74437','75217','74923','75159','75158','73895','73942','49886','74133'], scriptDomain: 'singingfiles.com', status: 'live' },
+  { id: 'freelancer', name: 'Freelancer Rate Calculator', icon: '💼', color: '#0d9488', offerPage: '/offers/freelancer-rate-calculator.html', category: 'Career', offerIds: ['74437','75217','74923','75159','75158','73895','73942','49886','74133'], scriptDomain: 'singingfiles.com', status: 'live' },
+  { id: 'stock-photos', name: 'Free Stock Photos Bundle', icon: '📸', color: '#059669', offerPage: '/offers/free-stock-photos-bundle.html', category: 'Creative', offerIds: ['74437','75217','74923','75159','75158','73895','73942','49886','74133'], scriptDomain: 'singingfiles.com', status: 'live' },
+  { id: 'workout', name: 'Home Workout Routines', icon: '🏋️', color: '#dc2626', offerPage: '/offers/home-workout-routines.html', category: 'Fitness', offerIds: ['74437','75217','74923','75159','75158','73895','73942','49886','74133'], scriptDomain: 'singingfiles.com', status: 'live' },
+  { id: 'budget', name: 'Personal Budget Spreadsheet', icon: '💰', color: '#0891b2', offerPage: '/offers/personal-budget-spreadsheet.html', category: 'Finance', offerIds: ['74437','75217','74923','75159','75158','73895','73942','49886','74133'], scriptDomain: 'singingfiles.com', status: 'live' },
+  { id: 'resume', name: 'Resume Template Pack', icon: '📄', color: '#2563eb', offerPage: '/offers/resume-template-pack.html', category: 'Career', offerIds: ['74437','75217','74923','75159','75158','73895','73942','49886','74133'], scriptDomain: 'singingfiles.com', status: 'live' },
+  { id: 'side-hustle', name: 'Side Hustle Starter Kit', icon: '💰', color: '#7c3aed', offerPage: '/offers/side-hustle-starter-kit.html', category: 'Career', offerIds: ['74437','75217','74923','75159','75158','73895','73942','49886','74133'], scriptDomain: 'singingfiles.com', status: 'live' },
+  { id: 'study-notes', name: 'Study Notes Collection', icon: '📚', color: '#4f46e5', offerPage: '/offers/study-notes-collection.html', category: 'Education', offerIds: ['74437','75217','74923','75159','75158','73895','73942','49886','74133'], scriptDomain: 'singingfiles.com', status: 'live' },
+  { id: 'travel', name: 'Travel Planning Checklist', icon: '✈️', color: '#e11d48', offerPage: '/offers/travel-planning-checklist.html', category: 'Lifestyle', offerIds: ['74437','75217','74923','75159','75158','73895','73942','49886','74133'], scriptDomain: 'singingfiles.com', status: 'live' },
+  { id: 'beginner-workout', name: 'Workout Plan for Beginners', icon: '🧘', color: '#16a34a', offerPage: '/offers/home-workout-plan-for-beginners.html', category: 'Fitness', offerIds: ['74437','75217','74923','75159','75158','73895','73942','49886','74133'], scriptDomain: 'singingfiles.com', status: 'pending' },
+  { id: 'grocery-savings', name: 'Save Money on Groceries', icon: '🛒', color: '#ca8a04', offerPage: '/offers/save-money-on-groceries.html', category: 'Finance', offerIds: ['74437','75217','74923','75159','75158','73895','73942','49886','74133'], scriptDomain: 'singingfiles.com', status: 'pending' },
+  { id: 'free-resume', name: 'Free Resume Builder Guide', icon: '📝', color: '#0ea5e9', offerPage: '/offers/free-resume-builder.html', category: 'Career', offerIds: ['74437','75217','74923','75159','75158','73895','73942','49886','74133'], scriptDomain: 'singingfiles.com', status: 'pending' },
+  { id: 'freelance-start', name: 'Start Freelancing No Experience', icon: '🚀', color: '#a855f7', offerPage: '/offers/start-freelancing-no-experience.html', category: 'Career', offerIds: ['74437','75217','74923','75159','75158','73895','73942','49886','74133'], scriptDomain: 'singingfiles.com', status: 'pending' },
+  { id: 'commercial-photos', name: 'Free Commercial Stock Photos', icon: '🖼️', color: '#14b8a6', offerPage: '/offers/free-commercial-stock-photos.html', category: 'Creative', offerIds: ['74437','75217','74923','75159','75158','73895','73942','49886','74133'], scriptDomain: 'singingfiles.com', status: 'pending' },
+  { id: 'student-budget', name: 'Student Budgeting Tools', icon: '🎓', color: '#6366f1', offerPage: '/offers/student-budgeting-tools.html', category: 'Education', offerIds: ['74437','75217','74923','75159','75158','73895','73942','49886','74133'], scriptDomain: 'singingfiles.com', status: 'pending' },
+  { id: 'budget-travel', name: 'Budget Travel Planning', icon: '🌍', color: '#f43f5e', offerPage: '/offers/budget-travel-planning.html', category: 'Lifestyle', offerIds: ['74437','75217','74923','75159','75158','73895','73942','49886','74133'], scriptDomain: 'singingfiles.com', status: 'pending' },
+  { id: 'college-study', name: 'College Study Resources', icon: '📖', color: '#8b5cf6', offerPage: '/offers/college-study-resources.html', category: 'Education', offerIds: ['74437','75217','74923','75159','75158','73895','73942','49886','74133'], scriptDomain: 'singingfiles.com', status: 'pending' },
+  { id: 'home-org', name: 'Budget Home Organization', icon: '🧹', color: '#84cc16', offerPage: '/offers/budget-home-organization.html', category: 'Lifestyle', offerIds: ['74437','75217','74923','75159','75158','73895','73942','49886','74133'], scriptDomain: 'singingfiles.com', status: 'pending' },
+  { id: 'phone-money', name: 'Make Money From Phone', icon: '📱', color: '#f97316', offerPage: '/offers/make-money-from-phone.html', category: 'Career', offerIds: ['74437','75217','74923','75159','75158','73895','73942','49886','74133'], scriptDomain: 'singingfiles.com', status: 'pending' }
+];
+
+// ======================== MEDIUM ARTICLES ========================
+var MEDIUM_CONTENT = [
+  { offerId: 'meal-prep', title: 'How I Meal Prepped for 30 Days on Just $147', tags: 'Meal Prep, Budget Cooking, Personal Finance, Food Savings, Healthy Eating',
+    body: 'For years, I spent over $400 a month on food. Takeout, impulse grocery buys, wasted leftovers — it added up fast.\n\nThen I found a free 30-day meal prep guide that changed everything. Here\'s what it includes:\n\n• A complete 30-day meal calendar with breakfast, lunch, and dinner\n• Weekly shopping lists organized by store section\n• 30 step-by-step recipes that cost under $5 per meal\n• Batch cooking schedules so you prep once and eat all week\n\nThe result? I spent $147 on food last month. That\'s a $250 savings.\n\nThe best part — the guide is completely free. No email required, no subscription, no catch.\n\nIf you want to take control of your food budget, start here.' },
+  { offerId: 'diy-decor', title: '50 Home Decor Projects Under $20 That Look Expensive', tags: 'DIY, Home Decor, Interior Design, Budget Living, Crafts',
+    body: 'You don\'t need a big budget to make your home look amazing.\n\nI discovered a free guide with 50 DIY home decor projects, each costing under $20. I tried 5 of them last weekend, and my living room looks completely different.\n\nHere\'s what the guide covers:\n\n• Step-by-step instructions with photos for each project\n• Complete material lists so you know exactly what to buy\n• Difficulty ratings from beginner to intermediate\n• Room-by-room organization\n\nSome highlights:\n- A $12 macramé wall hanging that looks like it costs $80\n- Painted mason jar organizers for under $8\n- A pallet wood shelf that cost me $15 in materials\n\nThe guide is free to download. No signup needed.' },
+  { offerId: 'freelancer', title: 'The Free Rate Calculator That Doubled My Freelance Income', tags: 'Freelancing, Personal Finance, Career, Self-Employment, Pricing',
+    body: 'When I started freelancing, I guessed my rates. $25/hour sounded fair.\n\nI was wrong.\n\nAfter using a free freelancer rate calculator, I discovered my actual rate should have been $65/hour. Here\'s why:\n\nThe calculator factors in:\n• Your business expenses (software, equipment, internet)\n• Taxes you need to set aside\n• Unpaid hours (admin, invoicing, pitching)\n• Health insurance and retirement\n• Market benchmarks for your industry\n\nOnce I adjusted my rates, I lost exactly zero clients. My income doubled within 3 months.\n\nThe toolkit also includes invoice templates and pricing guides for 50+ industries. All free.' },
+  { offerId: 'stock-photos', title: '200 Free Stock Photos Every Creator Needs', tags: 'Photography, Free Resources, Design, Content Creation, Blogging',
+    body: 'Stop paying $10-50 per stock photo.\n\nI found a free bundle of 200 high-resolution stock photos that you can use for:\n\n• Blog posts and articles\n• Social media content\n• Presentations and slideshows\n• Website design\n• Marketing materials\n• Print projects\n\nThe photos are organized by category: nature, business, food, travel, technology, lifestyle, and more.\n\nNo watermarks. No attribution required. No subscription. Just download and use.\n\nThe bundle is completely free — one quick offer unlock and the ZIP file is yours.' },
+  { offerId: 'workout', title: '30-Day Home Workout Challenge: No Equipment, No Excuses', tags: 'Fitness, Home Workout, Health, Exercise, Bodyweight Training',
+    body: 'I hate gyms. The commute, the crowds, the cost.\n\nSo I tried a free 30-day home workout plan. No equipment. No gym membership. Just me and my living room.\n\nWhat the plan includes:\n• Daily workout routines that take 20-30 minutes\n• Progressions from beginner to intermediate\n• Warm-up and cool-down sequences\n• Rest day activities\n• A progress tracking worksheet\n\nBy day 30, I could do 20 pushups (started at 3), hold a plank for 90 seconds (started at 15), and my energy levels were through the roof.\n\nTotal cost: $0.\n\nThe plan is free to download. Start today.' },
+  { offerId: 'budget', title: 'The Budget Spreadsheet That Finally Made Me Save Money', tags: 'Budgeting, Personal Finance, Money Management, Savings, Spreadsheet',
+    body: 'I tried budgeting apps. They were either too complex or too limited.\n\nThen I found a free spreadsheet that does everything:\n\n• Automatic spending categorization\n• Monthly vs. weekly view\n• Savings goal tracker with visual progress\n• Debt payoff calculator (snowball and avalanche methods)\n• 12-month financial projections\n\nThe first month I used it, I discovered I was spending $180/month on subscriptions I didn\'t use. Cancelled them immediately.\n\nThe spreadsheet works in Google Sheets and Excel. Free download, no signup required.' },
+  { offerId: 'resume', title: '10 Resume Templates That Actually Get Past ATS Bots', tags: 'Resume, Job Search, Career, Employment, Job Application',
+    body: 'Most resumes never reach a recruiter. They are filtered out by ATS (Applicant Tracking System) bots.\n\nThe fix is simpler than you think — use the right template.\n\nI found a free pack of 10 ATS-optimized resume templates. Here\'s what makes them different:\n\n• Clean formatting that ATS software can read\n• Proper section headers that bots recognize\n• Optimized keyword placement\n• Professional designs that also look great to humans\n\nThe pack includes templates for tech, creative, corporate, and freelance roles. Each one takes under 10 minutes to customize.\n\nFree download. Beat the bots.' },
+  { offerId: 'side-hustle', title: '50 Side Hustles You Can Start This Weekend With $0', tags: 'Side Hustle, Making Money, Entrepreneurship, Freelancing, Passive Income',
+    body: 'Everyone talks about side hustles. Most advice is either outdated or requires money to start.\n\nThis free starter kit lists 50 side hustles that:\n\n• Cost $0 to start\n• Can be launched in a weekend\n• Work around any schedule\n• Don\'t require special skills\n\nThe kit includes startup guides for each hustle:\n- How to set up\n- Where to find your first client/customer\n- Expected earnings range\n- Time investment required\n\nCategories include freelancing, digital products, local services, and online opportunities.\n\nFree download. Start earning this weekend.' },
+  { offerId: 'study-notes', title: 'The Study Notes Collection That Helped Me Ace My Exams', tags: 'Study Tips, Education, Exam Prep, College, Students',
+    body: 'Studying doesn\'t have to mean reading 300-page textbooks.\n\nI found a free collection of study notes that cut my study time in half:\n\n• One-page cheat sheets for key concepts\n• Practice questions with detailed explanations\n• Revision guides organized by topic\n• Multiple subjects covered\n\nHow I used them:\n1. Read the cheat sheet for the topic\n2. Attempt the practice questions\n3. Review explanations for wrong answers\n4. Repeat with the next topic\n\nResult: Better grades, less stress, more free time.\n\nFree download pack.' },
+  { offerId: 'travel', title: 'The Travel Planning Checklist That Saved My Vacation', tags: 'Travel, Travel Planning, Vacation, Budget Travel, Packing',
+    body: 'Last year I forgot my phone charger on a trip to Barcelona. This year, I forgot nothing.\n\nThe difference was a free travel planning checklist that covers everything:\n\n• Packing lists organized by trip type and climate\n• Daily itinerary templates\n• Budget calculator broken down by destination\n• Safety essentials guide\n• Emergency contact checklist\n• Currency conversion reference\n\nI used it for a 2-week Europe trip. Total planning time: 2 hours. Previous trips took days of scattered notes and forgotten items.\n\nFree PDF download.' }
+];
+
+// ======================== QUORA ANSWERS ========================
+var QUORA_CONTENT = [
+  { offerId: 'meal-prep', question: 'How do I meal prep on a tight budget?',
+    answer: 'I use a free 30-day meal prep guide that plans every meal under $5. It includes weekly shopping lists, batch cooking schedules, and 30 recipes. I went from spending $400/month on food to $147.\n\nKey things that helped:\n1. Shopping once per week with a planned list\n2. Batch cooking on Sundays\n3. Using overlapping ingredients across meals\n4. Leftover makeover recipes' },
+  { offerId: 'diy-decor', question: 'What are some cheap home decor ideas?',
+    answer: 'There is a free guide with 50 DIY decor projects, all under $20 in materials. I did 5 last weekend and my living room looks completely different.\n\nHighlights:\n- $12 macramé wall hanging that looks like it costs $80\n- Painted mason jar organizers for under $8\n- Pallet wood shelf for $15 in materials\n\nEach project has step-by-step photos and a complete materials list. All 50 projects cost under $20 each.' },
+  { offerId: 'freelancer', question: 'How should I set my freelance rates?',
+    answer: 'Use a rate calculator instead of guessing. Most freelancers undercharge by 40%.\n\nA free rate calculator factors in:\n- Business expenses (software, equipment, internet)\n- Taxes you need to set aside\n- Unpaid hours (admin, invoicing, pitching)\n- Market benchmarks for your industry\n\nWhen I used it, my rate went from $25/hr to $65/hr. I lost zero clients.' },
+  { offerId: 'stock-photos', question: 'Where can I find free stock photos for commercial use?',
+    answer: 'There is a free bundle of 200 high-resolution stock photos that are completely royalty-free. You can use them for commercial projects, blogs, social media, presentations, print materials, and ads.\n\nNo watermarks, no attribution required. The photos are organized by category (nature, business, food, travel, tech, lifestyle).' },
+  { offerId: 'workout', question: 'What is a good home workout plan for beginners?',
+    answer: 'I started with a free 30-day bodyweight workout plan. No equipment, 20-30 min/day.\n\nThe plan starts easy and progressively increases difficulty:\n- Week 1: Basic movements (squats, knee pushups, planks)\n- Week 2: Add reps and hold times\n- Week 3: Introduce new exercises\n- Week 4: Full routines\n\nAfter 30 days, I could do 20 full pushups (started at 3) and hold a plank for 90 seconds.' },
+  { offerId: 'budget', question: 'How do I create a personal budget?',
+    answer: 'Use a pre-built spreadsheet. I found a free one that does all calculations automatically.\n\nIt tracks:\n- Income vs. expenses by category\n- Monthly and weekly views\n- Savings goals with visual progress bars\n- Debt payoff calculator (snowball and avalanche methods)\n- 12-month projections\n\nThe key is tracking for at least one full month before making changes. Most people are shocked by where their money actually goes.' },
+  { offerId: 'resume', question: 'What are the best free resume templates that actually work?',
+    answer: 'The biggest issue is that ATS (Applicant Tracking System) bots reject 75% of resumes before a human sees them.\n\nI use a free pack of 10 ATS-optimized templates. Clean formatting that both bots and recruiters can read. Each template takes about 10 minutes to customize.\n\nTips:\n- Use standard section headers\n- Avoid tables and columns that confuse ATS\n- Include keywords from the job description\n- Keep it to one page if possible' },
+  { offerId: 'side-hustle', question: 'What are the best side hustles to start with no money?',
+    answer: 'Here are some that cost $0 to start:\n\n1. Freelance writing — pitch to blogs and businesses\n2. Virtual assistant — email management, scheduling\n3. Social media management — local businesses\n4. Tutoring — in-person or online\n5. Pet sitting / dog walking\n6. Sell digital templates\n7. Data entry — flexible, work from home\n\nThere is a free starter kit with 50 ideas and startup guides for each.' },
+  { offerId: 'study-notes', question: 'What are good free study resources for college students?',
+    answer: 'There is a free collection that includes:\n\n- One-page cheat sheets for popular subjects\n- Practice questions with detailed explanations\n- Revision guides organized by topic\n- Study schedule templates\n\nI used the cheat sheets for last-minute review before exams. Read the cheat sheet, attempt practice questions, review wrong answers. Repeat.\n\nOther free resources: Khan Academy, Quizlet, and professor office hours.' },
+  { offerId: 'travel', question: 'How do I plan a trip on a budget?',
+    answer: 'Use a structured travel planner. I found a free one that includes:\n\n- Budget calculator by destination\n- Packing lists organized by climate\n- Daily itinerary templates\n- Safety essentials checklist\n\nBudget travel tips:\n1. Book flights on Tuesday/Wednesday\n2. Use hostels or Airbnb instead of hotels\n3. Eat where locals eat, not tourist spots\n4. Walk or use public transport\n5. Travel during shoulder season' }
+];
+
+// ======================== REDDIT COMMENTS ========================
+var REDDIT_CONTENT = [
+  { offerId: 'meal-prep', subreddit: 'r/budgetfood', context: 'Posts about cheap meals or grocery budgeting',
+    comment: 'I started using a free 30-day meal prep guide and it cut my food spending from $400 to $147/month. Every meal is planned under $5 with shopping lists included. The batch cooking schedules are the real game changer — prep on Sunday, eat all week. Happy to share the link if anyone wants it.' },
+  { offerId: 'diy-decor', subreddit: 'r/DIY', context: 'Posts about budget home projects or room makeovers',
+    comment: 'There is a free guide with 50 DIY decor projects, all under $20 in materials. I did 5 last weekend and my living room looks completely different. The macramé wall hanging cost me $12 and looks like it cost $80. Each project has a full materials list and step-by-step photos. Worth checking out if anyone wants the link.' },
+  { offerId: 'freelancer', subreddit: 'r/freelance', context: 'Posts about pricing, rates, or starting freelancing',
+    comment: 'Biggest lesson I learned freelancing: I was undercharging by 40%. Used a free rate calculator that factors in expenses, taxes, unpaid hours, and market data. My rate went from $25/hr to $65/hr and I lost zero clients. The toolkit also has invoice templates and pricing guides for 50+ industries. Free download if anyone wants the link.' },
+  { offerId: 'stock-photos', subreddit: 'r/photography', context: 'Posts asking for free stock photo sources',
+    comment: 'Found a free bundle of 200 stock photos — high resolution, royalty-free, no attribution needed. Works for commercial projects, blogs, social media, print, everything. Organized by category (nature, business, food, travel, tech). Free download, no subscription. Link if anyone is interested.' },
+  { offerId: 'workout', subreddit: 'r/bodyweightfitness', context: 'Posts about beginner workout plans or home exercise',
+    comment: 'Started a free 30-day bodyweight plan a month ago. No equipment, 20-30 min/day. Started barely doing 3 knee pushups, now I can do 20 full ones. The plan includes warm-up, cool-down, rest day activities, and a progress tracker. Progressive difficulty so you are not overwhelmed on day 1. Link if anyone wants it.' },
+  { offerId: 'budget', subreddit: 'r/personalfinance', context: 'Posts about budgeting, saving money, or getting finances in order',
+    comment: 'I found a free budget spreadsheet that does everything automatically — spending categories, savings goals, debt payoff calculator, 12-month projections. First month I used it, discovered $180/month in subscriptions I forgot about. Works in Google Sheets and Excel. Link if anyone wants it.' },
+  { offerId: 'resume', subreddit: 'r/resumes', context: 'Posts about resume tips, job applications, or ATS',
+    comment: 'The real issue is ATS bots — 75% of resumes are rejected before a human sees them. Found a free pack of 10 ATS-optimized templates that actually pass the screening. Clean formatting, proper section headers, keyword-friendly. Each one takes 10 min to customize. Link if anyone wants the pack.' },
+  { offerId: 'side-hustle', subreddit: 'r/SideHustle', context: 'Posts asking for ways to make extra money',
+    comment: 'There is a free starter kit with 50 side hustles you can start with $0 this weekend. Each one has a startup guide, expected earnings, and time investment. Categories include freelancing, digital products, local services, and online work. No crypto, no MLM. Link if anyone is interested.' },
+  { offerId: 'study-notes', subreddit: 'r/college', context: 'Posts about exam prep, study tips, or study materials',
+    comment: 'Found a free study notes collection with cheat sheets, practice questions, and revision guides for popular subjects. Used the cheat sheets for last-minute review before finals — read the sheet, do practice questions, review wrong answers. Cut my study time in half. Link if anyone wants the pack.' },
+  { offerId: 'travel', subreddit: 'r/travel', context: 'Posts about budget travel or trip planning',
+    comment: 'Used a free travel planning checklist for my last trip. Includes packing lists by climate, budget calculator by destination, daily itinerary templates, and safety guides. Planned a 2-week Europe trip in 2 hours instead of days of scattered notes. Link if anyone wants it.' }
+];
+
+// ======================== TWITTER POSTS ========================
+var TWITTER_CONTENT = [
+  { offerId: 'meal-prep', text: '🍱 I Spent $147 on Food Last Month\n\nHere is exactly how — a free 30-day meal prep guide with every meal planned under $5. Shopping lists included.\n\nhttps://empireaffiliatemarketinghub.com/offers/budget-meal-prep-guide.html?utm_source=twitter&utm_medium=social&utm_campaign=empire_traffic' },
+  { offerId: 'diy-decor', text: '🏠 50 DIY Projects Under $20\n\nTransform your space without breaking the bank. Step-by-step instructions and material lists for every project.\n\nhttps://empireaffiliatemarketinghub.com/offers/diy-home-decor-ideas.html?utm_source=twitter&utm_medium=social&utm_campaign=empire_traffic' },
+  { offerId: 'freelancer', text: '💼 Most freelancers leave 40% on the table.\n\nThis free calculator shows your true hourly rate with market benchmarks.\n\nhttps://empireaffiliatemarketinghub.com/offers/freelancer-rate-calculator.html?utm_source=twitter&utm_medium=social&utm_campaign=empire_traffic' },
+  { offerId: 'stock-photos', text: '📸 200 Free Stock Photos (Royalty-Free)\n\nHigh-resolution images for blogs, presentations, and social media. No attribution required.\n\nhttps://empireaffiliatemarketinghub.com/offers/free-stock-photos-bundle.html?utm_source=twitter&utm_medium=social&utm_campaign=empire_traffic' },
+  { offerId: 'workout', text: '🏋️ No Gym? No Problem.\n\nThese 30-day bodyweight workout plans require zero equipment. All fitness levels, all free.\n\nhttps://empireaffiliatemarketinghub.com/offers/home-workout-routines.html?utm_source=twitter&utm_medium=social&utm_campaign=empire_traffic' },
+  { offerId: 'budget', text: '📊 See Where Your Money Actually Goes\n\nAutomated budget tracking, savings goals, and monthly financial reports. One free spreadsheet.\n\nhttps://empireaffiliatemarketinghub.com/offers/personal-budget-spreadsheet.html?utm_source=twitter&utm_medium=social&utm_campaign=empire_traffic' },
+  { offerId: 'resume', text: '📄 Your Resume Gets 6 Seconds\n\nMake them count. These 10 ATS-optimized templates are designed by recruiters. Free pack.\n\nhttps://empireaffiliatemarketinghub.com/offers/resume-template-pack.html?utm_source=twitter&utm_medium=social&utm_campaign=empire_traffic' },
+  { offerId: 'side-hustle', text: '💰 50 Side Hustles You Can Start This Weekend\n\n$0 startup cost. Step-by-step guides for each one. No crypto, no MLM, no BS.\n\nhttps://empireaffiliatemarketinghub.com/offers/side-hustle-starter-kit.html?utm_source=twitter&utm_medium=social&utm_campaign=empire_traffic' },
+  { offerId: 'study-notes', text: '📚 The Study Notes Top Students Use\n\nCheat sheets, practice questions, and revision guides for popular subjects. Free download.\n\nhttps://empireaffiliatemarketinghub.com/offers/study-notes-collection.html?utm_source=twitter&utm_medium=social&utm_campaign=empire_traffic' },
+  { offerId: 'travel', text: '✈️ The Only Travel Checklist You Need\n\nPacking lists, itinerary planner, budget calculator, and safety guides. Plan any trip perfectly.\n\nhttps://empireaffiliatemarketinghub.com/offers/travel-planning-checklist.html?utm_source=twitter&utm_medium=social&utm_campaign=empire_traffic' }
+];
+
+// ======================== TAB SWITCHING ========================
+document.querySelectorAll('.tab').forEach(function(t) {
+  t.addEventListener('click', function() {
+    document.querySelectorAll('.tab').forEach(function(x) { x.classList.remove('active'); });
+    document.querySelectorAll('.tab-panel').forEach(function(x) { x.classList.remove('active'); });
+    t.classList.add('active');
+    document.getElementById('panel-' + t.dataset.tab).classList.add('active');
+  });
+});
+document.querySelectorAll('.sub-tab').forEach(function(t) {
+  t.addEventListener('click', function() {
+    document.querySelectorAll('.sub-tab').forEach(function(x) { x.classList.remove('active'); });
+    document.querySelectorAll('.sub-panel').forEach(function(x) { x.classList.remove('active'); });
+    t.classList.add('active');
+    document.getElementById('sub-' + t.dataset.sub).classList.add('active');
+  });
+});
+
+// ======================== TOAST & COPY ========================
+function showToast(msg) {
+  var toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(function() { toast.classList.remove('show'); }, 2500);
+}
+function copyText(text, btn) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function() {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      showToast('Copied to clipboard');
+      setTimeout(function() { btn.textContent = btn.dataset.orig; btn.classList.remove('copied'); }, 2000);
+    });
+  } else {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent = 'Copied!'; btn.classList.add('copied');
+    showToast('Copied to clipboard');
+    setTimeout(function() { btn.textContent = btn.dataset.orig; btn.classList.remove('copied'); }, 2000);
+  }
+}
+
+// ======================== POSTED TRACKING ========================
+function togglePosted(key) {
+  var current = localStorage.getItem(key) === 'true';
+  localStorage.setItem(key, !current);
+  renderContent(); renderSEO(); updateProgress();
+}
+function isPosted(key) { return localStorage.getItem(key) === 'true'; }
+function getOffer(id) { return OFFERS.find(function(o) { return o.id === id; }); }
+
+function updateProgress() {
+  var count = 0, totalItems = 0;
+  OFFERS.forEach(function(a) {
+    ['medium','quora','reddit','twitter'].forEach(function(type) {
+      var key = a.id + '_' + type;
+      if (isPosted(key)) count++;
+      totalItems++;
+    });
+  });
+  var pct = totalItems > 0 ? Math.round((count / totalItems) * 100) : 0;
+  var el = document.getElementById('posting-progress');
+  if (el) {
+    el.innerHTML = '<div class="progress-row"><div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div><div class="progress-label">' + count + '/' + totalItems + ' posted (' + pct + '%)</div></div>';
+  }
+}
+
+// ======================== SUPABASE FETCH ========================
+var analyticsData = [];
+function fetchAnalytics() {
+  fetch(SB_URL + '/rest/v1/analytics?select=*', {
+    headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    analyticsData = data || [];
+    renderOverview();
+    renderOffers();
+    document.getElementById('last-refresh').textContent = 'Live \u2022 ' + new Date().toLocaleTimeString();
+    document.getElementById('status-dot').classList.remove('error');
+  })
+  .catch(function() {
+    document.getElementById('last-refresh').textContent = 'Connection error';
+    document.getElementById('status-dot').classList.add('error');
+  });
+}
+
+function renderOverview() {
+  var pageviews = analyticsData.filter(function(d) { return d.event_type === 'pageview'; });
+  var clicks = analyticsData.filter(function(d) { return d.event_type === 'offer_click'; });
+  document.getElementById('kpi-pageviews').textContent = pageviews.length;
+  document.getElementById('kpi-clicks').textContent = clicks.length;
+  document.getElementById('kpi-rate').textContent = pageviews.length > 0 ? (clicks.length / pageviews.length * 100).toFixed(1) + '%' : '0%';
+  var pages = {};
+  pageviews.forEach(function(d) { pages[d.page] = (pages[d.page] || 0) + 1; });
+  document.getElementById('kpi-pages').textContent = Object.keys(pages).length;
+
+  var pageClicks = {};
+  clicks.forEach(function(d) { pageClicks[d.page] = (pageClicks[d.page] || 0) + 1; });
+  var pageHtml = '';
+  Object.keys(pages).sort(function(a,b) { return pages[b]-pages[a]; }).forEach(function(p) {
+    var v = pages[p], c = pageClicks[p] || 0;
+    var r = v > 0 ? (c/v*100).toFixed(1) + '%' : '0%';
+    var name = p === '/' ? 'Homepage' : p.split('/').pop().replace('.html','').replace(/-/g,' ');
+    pageHtml += '<tr><td>' + name + '</td><td>' + v + '</td><td>' + c + '</td><td>' + r + '</td></tr>';
+  });
+  document.getElementById('table-pages').innerHTML = pageHtml || '<tr><td colspan="4" style="color:var(--text-dim)">No data yet</td></tr>';
+
+  var devices = {};
+  pageviews.forEach(function(d) { devices[d.device || 'Unknown'] = (devices[d.device || 'Unknown'] || 0) + 1; });
+  var devHtml = '';
+  Object.keys(devices).sort(function(a,b) { return devices[b]-devices[a]; }).forEach(function(d) {
+    devHtml += '<tr><td>' + d + '</td><td>' + devices[d] + '</td><td>' + (devices[d]/pageviews.length*100).toFixed(1) + '%</td></tr>';
+  });
+  document.getElementById('table-devices').innerHTML = devHtml || '<tr><td colspan="3" style="color:var(--text-dim)">No data yet</td></tr>';
+
+  var countries = {};
+  pageviews.forEach(function(d) { countries[d.country || 'Unknown'] = (countries[d.country || 'Unknown'] || 0) + 1; });
+  var countryHtml = '';
+  Object.keys(countries).sort(function(a,b) { return countries[b]-countries[a]; }).forEach(function(c) {
+    countryHtml += '<tr><td>' + c + '</td><td>' + countries[c] + '</td><td>' + (countries[c]/pageviews.length*100).toFixed(1) + '%</td></tr>';
+  });
+  document.getElementById('table-countries').innerHTML = countryHtml || '<tr><td colspan="3" style="color:var(--text-dim)">No data yet</td></tr>';
+
+  var recent = analyticsData.slice().sort(function(a,b) { return new Date(b.created_at) - new Date(a.created_at); }).slice(0, 15);
+  var recentHtml = '';
+  recent.forEach(function(d) {
+    var time = new Date(d.created_at).toLocaleString();
+    recentHtml += '<tr><td>' + time + '</td><td><span class="status-badge ' + (d.event_type === 'pageview' ? 'pageview' : 'pending') + '">' + d.event_type + '</span></td><td>' + (d.page === '/' ? 'Homepage' : d.page.split('/').pop()) + '</td><td>' + (d.device || '-') + '</td><td>' + (d.country || '-') + '</td></tr>';
+  });
+  document.getElementById('table-recent').innerHTML = recentHtml || '<tr><td colspan="5" style="color:var(--text-dim)">No activity yet</td></tr>';
+}
+
+// ======================== RENDER OFFERS ========================
+function renderOffers() {
+  var html = '';
+  OFFERS.forEach(function(a) {
+    var pv = analyticsData.filter(function(d) { return d.event_type === 'pageview' && d.page === a.offerPage; }).length;
+    var cc = analyticsData.filter(function(d) { return d.event_type === 'offer_click' && d.page === a.offerPage; }).length;
+    html += '<div class="article-card">';
+    html += '<h3 style="color:' + a.color + '">' + a.icon + ' ' + a.name + '</h3>';
+    html += '<div class="meta-row">';
+    html += '<div class="meta-item">Category: <strong>' + a.category + '</strong></div>';
+    html += '<div class="meta-item">Views: <strong>' + pv + '</strong></div>';
+    html += '<div class="meta-item">Offer Clicks: <strong>' + cc + '</strong></div>';
+    html += '<div class="meta-item">Click Rate: <strong>' + (pv > 0 ? (cc/pv*100).toFixed(1) + '%' : '0%') + '</strong></div>';
+    html += '</div>';
+    html += '<div class="meta-row">';
+    html += '<div class="meta-item">Domain: <strong>' + a.scriptDomain + '</strong></div>';
+    html += '<div class="meta-item">Offer IDs: <strong>' + a.offerIds.length + ' configured</strong></div>';
+    html += '<div class="meta-item">Status: <span class="status-badge ' + a.status + '">' + a.status + '</span></div>';
+    html += '</div>';
+    html += '<div class="checks">';
+    html += '<span class="check-tag ok">Offers Active</span>';
+    html += '<span class="check-tag ok">Geo-Targeted</span>';
+    html += '<span class="check-tag ok">Device-Specific</span>';
+    html += '</div>';
+    html += '<div class="actions">';
+    html += '<a href="' + BASE + a.offerPage + '" target="_blank" rel="noopener" class="btn">View Landing Page</a>';
+    html += '</div></div>';
+  });
+  document.getElementById('offers-list').innerHTML = html;
+}
+
+// ======================== RENDER CONTENT ========================
+function renderContent() {
+  // Medium
+  var mediumEl = document.getElementById('sub-medium');
+  if (mediumEl) {
+    var mHtml = '';
+    MEDIUM_CONTENT.forEach(function(item, i) {
+      var offer = getOffer(item.offerId);
+      var key = item.offerId + '_medium';
+      var posted = isPosted(key);
+      var link = BASE + offer.offerPage + '?utm_source=medium&utm_medium=article&utm_campaign=empire_traffic';
+      mHtml += '<div class="content-card">';
+      mHtml += '<span class="tag" style="background:' + offer.color + '22;color:' + offer.color + '">' + offer.icon + ' ' + offer.name + '</span>';
+      mHtml += '<h3>' + item.title + '</h3>';
+      mHtml += '<p class="target">Tags: <strong>' + item.tags + '</strong></p>';
+      mHtml += '<pre>' + item.body + '\n\n' + link + '</pre>';
+      mHtml += '<div class="card-actions">';
+      mHtml += '<button class="btn medium-btn" data-orig="📋 Copy Article" onclick="copyText(MEDIUM_CONTENT[' + i + '].title+\'\\n\\n\'+MEDIUM_CONTENT[' + i + '].body+\'\\n\\n\'+\'' + link + '\',this)">📋 Copy Article</button>';
+      mHtml += '<a href="https://medium.com/new-story" target="_blank" rel="noopener" class="btn">Open Medium</a>';
+      mHtml += '<span class="posted-toggle ' + (posted ? 'active' : '') + '" onclick="togglePosted(\'' + key + '\')">' + (posted ? '&#10003; Posted' : '&#9744; Mark Posted') + '</span>';
+      mHtml += '</div></div>';
+    });
+    mediumEl.innerHTML = mHtml;
+  }
+
+  // Quora
+  var quoraEl = document.getElementById('sub-quora');
+  if (quoraEl) {
+    var qHtml = '';
+    QUORA_CONTENT.forEach(function(item, i) {
+      var offer = getOffer(item.offerId);
+      var key = item.offerId + '_quora';
+      var posted = isPosted(key);
+      var link = BASE + offer.offerPage + '?utm_source=quora&utm_medium=answer&utm_campaign=empire_traffic';
+      qHtml += '<div class="content-card">';
+      qHtml += '<span class="tag" style="background:' + offer.color + '22;color:' + offer.color + '">' + offer.icon + ' ' + offer.name + '</span>';
+      qHtml += '<h3>Q: ' + item.question + '</h3>';
+      qHtml += '<pre>' + item.answer + '\n\n' + link + '</pre>';
+      qHtml += '<div class="card-actions">';
+      qHtml += '<button class="btn quora-btn" data-orig="📋 Copy Answer" onclick="copyText(\'Q: ' + item.question.replace(/'/g, "\\'") + '\\n\\n\'+QUORA_CONTENT[' + i + '].answer+\'\\n\\n\'+\'' + link + '\',this)">📋 Copy Answer</button>';
+      qHtml += '<a href="https://www.quora.com/search?q=' + encodeURIComponent(item.question) + '" target="_blank" rel="noopener" class="btn">Find on Quora</a>';
+      qHtml += '<span class="posted-toggle ' + (posted ? 'active' : '') + '" onclick="togglePosted(\'' + key + '\')">' + (posted ? '&#10003; Posted' : '&#9744; Mark Posted') + '</span>';
+      qHtml += '</div></div>';
+    });
+    quoraEl.innerHTML = qHtml;
+  }
+
+  // Reddit
+  var redditEl = document.getElementById('sub-reddit');
+  if (redditEl) {
+    var rHtml = '';
+    REDDIT_CONTENT.forEach(function(item, i) {
+      var offer = getOffer(item.offerId);
+      var key = item.offerId + '_reddit';
+      var posted = isPosted(key);
+      rHtml += '<div class="content-card">';
+      rHtml += '<span class="tag" style="background:' + offer.color + '22;color:' + offer.color + '">' + offer.icon + ' ' + offer.name + '</span>';
+      rHtml += '<div style="display:flex;gap:8px;margin-bottom:8px;"><span class="check-tag ok">' + item.subreddit + '</span></div>';
+      rHtml += '<p class="target">Post context: <strong>' + item.context + '</strong></p>';
+      rHtml += '<pre>' + item.comment + '</pre>';
+      rHtml += '<div class="card-actions">';
+      rHtml += '<button class="btn reddit-btn" data-orig="📋 Copy Comment" onclick="copyText(REDDIT_CONTENT[' + i + '].comment,this)">📋 Copy Comment</button>';
+      rHtml += '<span class="posted-toggle ' + (posted ? 'active' : '') + '" onclick="togglePosted(\'' + key + '\')">' + (posted ? '&#10003; Posted' : '&#9744; Mark Posted') + '</span>';
+      rHtml += '</div></div>';
+    });
+    redditEl.innerHTML = rHtml;
+  }
+
+  // Twitter
+  var twitterEl = document.getElementById('sub-twitter');
+  if (twitterEl) {
+    var tHtml = '';
+    TWITTER_CONTENT.forEach(function(item, i) {
+      var offer = getOffer(item.offerId);
+      var key = item.offerId + '_twitter';
+      var posted = isPosted(key);
+      tHtml += '<div class="content-card">';
+      tHtml += '<span class="tag" style="background:' + offer.color + '22;color:' + offer.color + '">' + offer.icon + ' ' + offer.name + '</span>';
+      tHtml += '<pre>' + item.text + '</pre>';
+      tHtml += '<div class="card-actions">';
+      tHtml += '<button class="btn twitter-btn" data-orig="📋 Copy Tweet" onclick="copyText(TWITTER_CONTENT[' + i + '].text,this)">📋 Copy Tweet</button>';
+      tHtml += '<a href="https://twitter.com/intent/tweet?text=' + encodeURIComponent(item.text) + '" target="_blank" rel="noopener" class="btn">Open Twitter</a>';
+      tHtml += '<span class="posted-toggle ' + (posted ? 'active' : '') + '" onclick="togglePosted(\'' + key + '\')">' + (posted ? '&#10003; Posted' : '&#9744; Mark Posted') + '</span>';
+      tHtml += '</div></div>';
+    });
+    twitterEl.innerHTML = tHtml;
+  }
+  updateProgress();
+}
+
+// ======================== RENDER SEO ========================
+function renderSEO() {
+  var urls = [
+    { name: 'Homepage', url: '/' },
+    { name: 'Rewards Hub', url: '/rewards-hub.html' },
+    { name: 'Affiliate Disclosure', url: '/affiliate-disclosure.html' }
+  ];
+  OFFERS.forEach(function(a) { urls.push({ name: a.icon + ' ' + a.name, url: a.offerPage }); });
+  var tableHtml = '';
+  urls.forEach(function(u) {
+    tableHtml += '<tr><td>' + u.name + '</td><td><span class="status-badge live">Included</span></td><td><a href="https://search.

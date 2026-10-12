@@ -1,0 +1,65 @@
+# ═══════════════════════════════════════════════════════════
+# THE EMPIRE — Netlify Configuration
+# ═══════════════════════════════════════════════════════════
+
+# ── Deleted page — permanent redirect to homepage ──
+[[redirects]]
+  from = "/kimi.html"
+  to = "/"
+  status = 301
+  force = true
+
+# ── Utility pages that should not be directly accessible to crawlers
+#    but still need to work for OAuth and conversion callbacks ──
+[[redirects]]
+  from = "/twitter-auth.html"
+  to = "/twitter-auth.html"
+  status = 200
+  force = false
+
+[[redirects]]
+  from = "/sitemap.xml"
+  to = "/sitemap.xml"
+  status = 200
+  force = false
+
+[[redirects]]
+  from = "/robots.txt"
+  to = "/robots.txt"
+  status = 200
+  force = false
+
+# ── Custom 404 page for missing content ──
+[[redirects]]
+  from = "/*"
+  to = "/404.html"
+  status = 404
+
+# ── Headers — security and performance ──
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
+
+[[headers]]
+  for = "/offers/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600, must-revalidate"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/images/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

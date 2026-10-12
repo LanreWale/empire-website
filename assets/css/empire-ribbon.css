@@ -1,0 +1,219 @@
+/* ============================================================
+   EMPIRE REWARDS — BRIDGE RIBBON
+   Slim dark-navy strip at the top of every offer page.
+   Visually ties the cream offer pages to the navy Empire brand.
+   Added via one <link> tag — no HTML rewrite required.
+   ============================================================ */
+
+:root {
+    --er-navy: #0B1120;
+    --er-gold: #D4AF37;
+    --er-gold-light: #F4E8C1;
+    --er-gold-rgb: 212, 175, 55;
+    --er-text: #F8FAFC;
+    --er-text-muted: #94A3B8;
+    --er-ribbon-h: 44px;
+}
+
+/* Push page content down so ribbon doesn't overlap the existing header */
+html body {
+    padding-top: var(--er-ribbon-h) !important;
+}
+
+/* The ribbon itself — fixed at the top so it stays visible on scroll */
+.empire-ribbon {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--er-ribbon-h);
+    background: linear-gradient(180deg, #0B1120 0%, #0a0e1a 100%);
+    border-bottom: 1px solid rgba(var(--er-gold-rgb), 0.25);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    font-family: 'DM Mono', 'SF Mono', Menlo, monospace;
+    color: var(--er-text);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+    -webkit-font-smoothing: antialiased;
+}
+
+.empire-ribbon-inner {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.empire-ribbon-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.empire-ribbon-mark {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, var(--er-gold) 0%, #AA8C2C 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #0B1120;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(var(--er-gold-rgb), 0.35);
+}
+
+.empire-ribbon-brand {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.06em;
+    color: var(--er-gold);
+    font-weight: 400;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.empire-ribbon-brand strong {
+    color: var(--er-gold-light);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+}
+
+.empire-ribbon-sep {
+    color: rgba(var(--er-gold-rgb), 0.35);
+    font-size: 0.7rem;
+    flex-shrink: 0;
+}
+
+.empire-ribbon-context {
+    font-size: 0.68rem;
+    color: var(--er-text-muted);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.empire-ribbon-context strong {
+    color: var(--er-text);
+    font-weight: 500;
+}
+
+.empire-ribbon-right {
+    flex-shrink: 0;
+}
+
+.empire-ribbon-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    background: rgba(var(--er-gold-rgb), 0.08);
+    border: 1px solid rgba(var(--er-gold-rgb), 0.35);
+    border-radius: 100px;
+    color: var(--er-gold-light);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.empire-ribbon-link:hover {
+    background: rgba(var(--er-gold-rgb), 0.18);
+    border-color: var(--er-gold);
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(var(--er-gold-rgb), 0.25);
+}
+
+.empire-ribbon-link:focus-visible {
+    outline: 2px solid var(--er-gold);
+    outline-offset: 3px;
+}
+
+.empire-ribbon-link svg {
+    width: 12px;
+    height: 12px;
+    stroke: currentColor;
+    transition: transform 0.2s ease;
+}
+
+.empire-ribbon-link:hover svg {
+    transform: translateX(2px);
+}
+
+/* Responsive — compact on mobile */
+@media (max-width: 640px) {
+    :root {
+        --er-ribbon-h: 40px;
+    }
+
+    .empire-ribbon {
+        padding: 0 12px;
+    }
+
+    .empire-ribbon-context,
+    .empire-ribbon-sep {
+        display: none;
+    }
+
+    .empire-ribbon-brand {
+        font-size: 0.78rem;
+    }
+
+    .empire-ribbon-mark {
+        width: 22px;
+        height: 22px;
+        font-size: 0.78rem;
+    }
+
+    .empire-ribbon-link {
+        padding: 6px 11px;
+        font-size: 0.62rem;
+        gap: 4px;
+    }
+
+    .empire-ribbon-link span {
+        display: none;
+    }
+
+    .empire-ribbon-link svg {
+        width: 14px;
+        height: 14px;
+    }
+}
+
+/* Print — hide ribbon */
+@media print {
+    .empire-ribbon {
+        display: none !important;
+    }
+    html body {
+        padding-top: 0 !important;
+    }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .empire-ribbon-link {
+        transition: none;
+    }
+}
+
+/* ============================================================
+   The ribbon HTML is injected by JS below so no HTML edits
+   are needed on the 20 offer pages beyond the one <link> tag.
+   ============================================================ */
