@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -486,25 +486,36 @@ table.data-table td strong{color:var(--c-ink)}
     </div>
   </section>
 
-  <!-- ════════════════════════════════════════════════════════════
-       UNIVERSAL EMAIL CAPTURE — PRIMARY PATH
-       ════════════════════════════════════════════════════════════ -->
-
   <!-- ------------------------------------------------------------
-       PINTEREST SAVE � Static pin preview
+       PINTEREST SAVE — Static pin preview
        ------------------------------------------------------------ -->
   <section class="pin-preview">
     <div class="pin-preview-label">Save this for later</div>
-    <a href="/offers/budget-home-organization.html" class="pin-preview-wrap" aria-label="Preview of the pin for this offer">
-      <img src="/assets/pins/pin-17-home-organization.png" alt="Budget Home Organization � Free Ideas + Templates" width="735" height="1102" loading="lazy" decoding="async">
+    <a href="/offers/budget-meal-prep-guide.html" class="pin-preview-wrap" aria-label="Preview of the pin for this offer">
+      <img src="/assets/pins/pin-01-meal-prep.png" alt="Spend $147 on Food for a Month — Free 30-Day Meal Prep Guide" width="735" height="1102" loading="lazy" decoding="async">
     </a>
     <p class="pin-preview-hint">
-      <strong>Bookmark this page</strong> � your free download unlocks instantly once you complete one quick step.
+      <strong>Bookmark this page</strong> — your free download unlocks instantly once you complete one quick step.
     </p>
   </section>
-<section class="gate" id="gate">
 
-    <div class="email-capture-card" id="email-capture-card">
+  <!-- ════════════════════════════════════════════════════════════
+       B2 FLOW — OFFER GATE
+       Offers render first (primary path). Email form is hidden
+       until the visitor clicks an offer. This forces offer
+       engagement before email submission, preventing the
+       "grab freebie and leave" leak that killed Week 1 conversions.
+       ════════════════════════════════════════════════════════════ -->
+  <section class="gate" id="gate">
+
+    <div class="offers-panel open" id="offers-panel" aria-hidden="false">
+      <p class="offers-intro">&#128071; Click any offer below to unlock your free download. Most take under 30 seconds.</p>
+      <div class="offers-grid" id="offers-grid"></div>
+    </div>
+
+    <div class="or-divider" id="unlock-divider" style="display:none"><span>Now unlock your download</span></div>
+
+    <div class="email-capture-card" id="email-capture-card" style="display:none">
       <h2>Where Should We Send It?</h2>
       <p class="email-sub">Enter your email and we'll send the download instantly. No spam, unsubscribe anytime.</p>
 
@@ -517,36 +528,6 @@ table.data-table td strong{color:var(--c-ink)}
         <span>&#10003; No credit card required</span>
         <span>&#10003; Instant access</span>
       </div>
-    </div>
-
-    <div class="or-divider"><span>Or</span></div>
-
-    <!-- ALTERNATIVE PATH — SPONSOR OFFER -->
-    <div class="gate-teaser" id="gate-teaser">
-      <div class="gate-lock">
-        <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-        </svg>
-      </div>
-      <h2 class="gate-title">Prefer Not to Share Your Email?</h2>
-      <p class="gate-desc">Complete one quick sponsor bonus instead — it unlocks the download via a different path. Takes about 30 seconds.</p>
-      <button id="reveal-offers-btn" class="gate-btn" type="button">
-        <span>Unlock via Sponsor Offer</span>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <path d="M5 12h14M12 5l7 7-7 7"/>
-        </svg>
-      </button>
-      <div class="gate-trust">
-        <span>&#10003; Free forever</span>
-        <span>&#10003; No credit card required</span>
-        <span>&#10003; Instant access</span>
-      </div>
-    </div>
-
-    <div class="offers-panel" id="offers-panel" aria-hidden="true">
-      <p class="offers-intro">&#128071; Pick <strong>one</strong> sponsor below. Most take under 30 seconds.</p>
-      <div class="offers-grid" id="offers-grid"></div>
     </div>
 
     <div class="gate-unlocked" id="gate-unlocked">
@@ -787,9 +768,9 @@ table.data-table td strong{color:var(--c-ink)}
 
   <section class="section cta-bottom">
     <h2>Ready To Download?</h2>
-    <p>Scroll back up to the unlock card, click the button, and complete one quick sponsor bonus — or use the email form at the top.</p>
-    <button class="cta-bottom-btn" type="button" data-unlock-trigger>
-      &#11014; Unlock Your Free Guide
+    <p>Scroll back up to the offer cards, click one to unlock your free download, then enter your email to receive it instantly.</p>
+    <button class="cta-bottom-btn" type="button" onclick="document.getElementById('gate').scrollIntoView({behavior:'smooth',block:'start'})">
+      &#11014; Back to Offers
     </button>
   </section>
 
@@ -825,15 +806,6 @@ table.data-table td strong{color:var(--c-ink)}
 
 </main>
 
-<div class="sticky" id="sticky">
-  <div class="sticky-inner">
-    <div class="sticky-text">&#128274; Your free download is <span>waiting to be unlocked</span></div>
-    <button class="sticky-btn" type="button" data-unlock-trigger>
-      &#11014; Unlock Now
-    </button>
-  </div>
-</div>
-
 <footer class="footer">
   <div class="footer-links">
     <a href="/">Home</a>
@@ -860,17 +832,12 @@ table.data-table td strong{color:var(--c-ink)}
 <script>
 /* ════════════════════════════════════════════════════════════
    UNIVERSAL EMAIL CAPTURE CONFIG
-   Swap this block when you change email providers.
    ════════════════════════════════════════════════════════════ */
 window.EMPIRE_EMAIL_CONFIG = {
   provider: 'emailoctopus',
-  // EmailOctopus embed script — replace this if you switch providers
   embedScript: '<script async src="https://eomail5.com/form/eb1edfcc-c0ef-11f1-bd33-d557cd46b867.js" data-form="eb1edfcc-c0ef-11f1-bd33-d557cd46b867"><\/script>',
-  // Fallback: if the embed fails to load, reveal the sponsor offer path
-  fallbackToSponsorOffer: true,
-  // How long to wait for the embed to render before falling back (ms)
+  fallbackToSponsorOffer: false,
   embedTimeout: 4000,
-  // Target container ID for the embed
   embedContainer: 'emailoctopus-embed'
 };
 
@@ -880,123 +847,74 @@ window.EMPIRE_OFFER_CONFIG = {
 };
 </script>
 
+<!--
+  SCRIPT LOAD ORDER (critical):
+  1. empire-tracker.js v4.2 — must load first so window.empireTrack exists
+     for empire-offers.js and page inline code
+  2. attribution.js — reads UTM params, writes to sessionStorage
+  3. empire-offers.js v4.1 — renders offers, dispatches empire_offer_clicked
+  4. empire-ribbon.js — cosmetic ribbon
+  5. Inline page scripts — B2 flow, email capture, related-link tracking
+-->
+<script src="../empire-tracker.js?v=7"></script>
+<script>window.__empireRealTrack = window.empireTrack;</script>
 <script src="/assets/js/attribution.js?v=3"></script>
-<script src="/assets/js/empire-offers.js"></script>
+<script src="/assets/js/empire-offers.js?v=4"></script>
 <script src="/assets/js/empire-ribbon.js"></script>
 
 <script>
 /* ════════════════════════════════════════════════════════════
-   UNIVERSAL EMAIL CAPTURE — LOADER + FALLBACK LOGIC
+   UNIVERSAL EMAIL CAPTURE — LOADER + SUCCESS WATCHER
    ════════════════════════════════════════════════════════════ */
 (function(){
   'use strict';
 
   var cfg = window.EMPIRE_EMAIL_CONFIG || {};
   var container = document.getElementById(cfg.embedContainer || 'emailoctopus-embed');
-  var teaser = document.getElementById('gate-teaser');
-  var offersPanel = document.getElementById('offers-panel');
   var unlocked = document.getElementById('gate-unlocked');
-  var emailCard = document.getElementById('email-capture-card');
-
-  function revealSponsorFallback(reason){
-    if (!cfg.fallbackToSponsorOffer) return;
-    if (emailCard) {
-      emailCard.style.transition = 'opacity .4s ease, transform .4s ease';
-      emailCard.style.opacity = '0.4';
-    }
-    // Scroll the teaser into view so visitor sees the alternative
-    if (teaser) {
-      teaser.style.display = 'block';
-      teaser.style.opacity = '1';
-    }
-    if (typeof window.empireTrack === 'function') {
-      window.empireTrack('email_embed_fallback', { reason: reason || 'timeout' });
-    }
-  }
 
   function injectEmailOctopusEmbed(){
     if (!cfg.embedScript || !container) return false;
     try {
-      // Extract the script and data-form from the config string
       var tmp = document.createElement('div');
       tmp.innerHTML = cfg.embedScript;
       var script = tmp.querySelector('script');
       if (!script) return false;
-
-      // Clear the loading placeholder
       container.innerHTML = '';
-
-      // Create a fresh script tag (innerHTML-injected scripts don't execute)
       var s = document.createElement('script');
       s.async = true;
       s.src = script.src;
       if (script.getAttribute('data-form')) {
         s.setAttribute('data-form', script.getAttribute('data-form'));
       }
-      s.onerror = function(){
-        revealSponsorFallback('script_error');
-      };
       container.appendChild(s);
-
       if (typeof window.empireTrack === 'function') {
         window.empireTrack('email_embed_loaded', { provider: cfg.provider || 'unknown' });
       }
       return true;
     } catch(e) {
-      revealSponsorFallback('injection_exception');
+      if (typeof window.empireTrack === 'function') {
+        window.empireTrack('email_embed_fallback', { reason: 'injection_exception' });
+      }
       return false;
     }
   }
 
-  // Watch for the EmailOctopus form to render inside the container
-  function watchForEmbedRender(){
-    var attempts = 0;
-    var maxAttempts = (cfg.embedTimeout || 4000) / 250;
-    var timer = setInterval(function(){
-      attempts++;
-      var hasForm = container && container.querySelector('form');
-      if (hasForm) {
-        clearInterval(timer);
-        if (typeof window.empireTrack === 'function') {
-          window.empireTrack('email_form_ready', { provider: cfg.provider || 'unknown' });
-        }
-        return;
-      }
-      if (attempts >= maxAttempts) {
-        clearInterval(timer);
-        var empty = container && container.querySelector('.email-capture-loading');
-        if (empty || !container.innerHTML.trim()) {
-          revealSponsorFallback('timeout');
-        }
-      }
-    }, 250);
-  }
-
-  // Fire it all up when DOM is ready
   function init(){
-    var injected = injectEmailOctopusEmbed();
-    if (injected) {
-      watchForEmbedRender();
-    } else {
-      revealSponsorFallback('no_config');
-    }
+    injectEmailOctopusEmbed();
   }
-
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
   }
 
-  // Detect EmailOctopus success — it usually replaces the form or shows a message
-  // We watch for any success element inside the container
+  // Watch for EmailOctopus success
   var successTimer = setInterval(function(){
     if (!container) return;
     var success = container.querySelector('.emailoctopus-success, [class*="success"], [class*="thank"]');
     if (success) {
       clearInterval(successTimer);
-      if (teaser) teaser.style.display = 'none';
-      if (offersPanel) { /* v6: keep offers visible */ }
       if (unlocked) {
         unlocked.style.display = 'block';
         setTimeout(function(){
@@ -1004,15 +922,11 @@ window.EMPIRE_OFFER_CONFIG = {
           window.scrollTo({ top: y, behavior: 'smooth' });
         }, 200);
       }
-      var stickyEl = document.getElementById('sticky');
-      if (stickyEl) stickyEl.classList.remove('show');
       if (typeof window.empireTrack === 'function') {
         window.empireTrack('email_form_submitted', { provider: cfg.provider || 'unknown' });
       }
     }
   }, 500);
-
-  // Stop the success watcher after 60 seconds to prevent memory leaks
   setTimeout(function(){ clearInterval(successTimer); }, 60000);
 
 })();
@@ -1020,331 +934,81 @@ window.EMPIRE_OFFER_CONFIG = {
 
 <script>
 /* ════════════════════════════════════════════════════════════
-   SPONSOR OFFER LOGIC + STICKY + ANALYTICS (from original page)
+   B2 FLOW — Reveal email form when visitor clicks an offer
    ════════════════════════════════════════════════════════════ */
 (function(){
   'use strict';
 
-  function isBot(){
-    try{
-      var ua = navigator.userAgent || '';
-      if(/bot|crawler|spider|scraper|curl|wget|python|java|headless|phantom|selenium|puppeteer|lighthouse|gtmetrix|pagespeed|facebookexternalhit|twitterbot|linkedinbot|telegrambot|whatsapp|slackbot|discordbot|googlebot|bingbot|yandexbot|baiduspider|ahrefsbot|semrushbot/i.test(ua)) return true;
-      if(window._phantom||window.__nightmare||window._selenium) return true;
-    }catch(e){}
-    return false;
+  // Fire pageview once (empire-tracker v4.2 no longer auto-fires it)
+  if (typeof window.empireTrack === 'function') {
+    window.empireTrack('pageview');
   }
 
-  function getDevice(){
-    var ua = navigator.userAgent;
-    if(/android/i.test(ua)) return 'android';
-    if(/iPad|iPhone|iPod/.test(ua)) return 'ios';
-    return 'desktop';
-  }
+  // Reveal email form + divider when any offer card is clicked
+  window.addEventListener('empire_offer_clicked', function (e) {
+    var divider = document.getElementById('unlock-divider');
+    var emailCard = document.getElementById('email-capture-card');
+    if (!emailCard) return;
 
-  function getGeo(){
-    try{
-      var tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      if(/Europe\/Berlin|Europe\/Busingen/i.test(tz)) return {code:'DE', name:'Germany'};
-      if(/Europe\/London/i.test(tz)) return {code:'GB', name:'United Kingdom'};
-      if(/Europe\/Ljubljana/i.test(tz)) return {code:'SI', name:'Slovenia'};
-      if(/Europe\/Warsaw/i.test(tz)) return {code:'PL', name:'Poland'};
-      if(/Europe\/Madrid/i.test(tz)) return {code:'ES', name:'Spain'};
-      if(/Asia\/Singapore|Asia\/Kuala_Lumpur/i.test(tz)) return {code:'SG', name:'Singapore'};
-      if(/^Australia\//i.test(tz)) return {code:'AU', name:'Australia'};
-      if(/America\/Toronto|America\/Vancouver/i.test(tz)) return {code:'CA', name:'Canada'};
-      return {code:'US', name:'the United States'};
-    }catch(e){ return {code:'US', name:'the United States'}; }
-  }
-
-  var device = getDevice();
-  var geo = getGeo();
-
-  var banner = document.getElementById('geo-banner');
-  if(banner){
-    banner.textContent = '\u2728 Offers personalized for ' + geo.name + ' \u00b7 ' + device.charAt(0).toUpperCase() + device.slice(1);
-    banner.classList.add('show');
-  }
-
-  var OFFER_BASE = 'https://singingfiles.com/show.php?l=0&u=2548035&id=';
-
-  var OFFERS = {
-    'US-desktop': [
-      { emoji:'🎁', tag:'Email Submit', tagClass:'email', title:'$100 Nike Gift Card', desc:'Enter your email for a chance to win a $100 Nike gift card', payout:'$2.99', url:OFFER_BASE+'75217', recommended:true },
-      { emoji:'💄', tag:'Email Submit', tagClass:'email', title:'$100 Ulta Gift Card', desc:'Quick email entry for a chance to win a beauty gift card', payout:'$3.08', url:OFFER_BASE+'74437', recommended:false },
-      { emoji:'🎫', tag:'Credit Card', tagClass:'cc', title:'AARP Membership — $15/yr', desc:'Join AARP to unlock instantly. Full member benefits included', payout:'$10.27', url:OFFER_BASE+'75158', recommended:false }
-    ],
-    'US-android': [
-      { emoji:'💄', tag:'Email Submit', tagClass:'email', title:'$100 Ulta Gift Card', desc:'Enter your email for a chance to win', payout:'$3.08', url:OFFER_BASE+'74437', recommended:true },
-      { emoji:'🧘', tag:'Mobile Install', tagClass:'mobile', title:'Yoga Workout Game', desc:'Download a free fitness app to unlock', payout:'$0.56', url:OFFER_BASE+'74923', recommended:false },
-      { emoji:'🎫', tag:'Credit Card', tagClass:'cc', title:'AARP Membership — $15/yr', desc:'Join AARP to unlock instantly', payout:'$10.27', url:OFFER_BASE+'75159', recommended:false }
-    ],
-    'US-ios': [
-      { emoji:'🎁', tag:'Email Submit', tagClass:'email', title:'$100 Nike Gift Card', desc:'Enter your email for a chance to win', payout:'$2.99', url:OFFER_BASE+'75217', recommended:true },
-      { emoji:'💄', tag:'Email Submit', tagClass:'email', title:'$100 Ulta Gift Card', desc:'Enter your email for a chance to win', payout:'$3.08', url:OFFER_BASE+'74437', recommended:false },
-      { emoji:'🎫', tag:'Credit Card', tagClass:'cc', title:'AARP Membership — $15/yr', desc:'Join AARP to unlock instantly', payout:'$10.27', url:OFFER_BASE+'75158', recommended:false }
-    ],
-    'DE-desktop': [
-      { emoji:'🎁', tag:'Email Submit', tagClass:'email', title:'$100 Nike Gift Card', desc:'Enter your email for a chance to win', payout:'$2.99', url:OFFER_BASE+'75217', recommended:true },
-      { emoji:'💄', tag:'Email Submit', tagClass:'email', title:'$100 Ulta Gift Card', desc:'Enter your email for a chance to win', payout:'$3.08', url:OFFER_BASE+'74437', recommended:false },
-      { emoji:'🎫', tag:'Credit Card', tagClass:'cc', title:'AARP Membership — $15/yr', desc:'Join AARP to unlock instantly', payout:'$10.27', url:OFFER_BASE+'75158', recommended:false }
-    ],
-    'DE-android': [
-      { emoji:'🎮', tag:'Mobile Install', tagClass:'mobile', title:'Just Games — Install 3 Apps', desc:'Install 3 free game apps to unlock instantly', payout:'$6.42', url:OFFER_BASE+'73895', recommended:true },
-      { emoji:'🎁', tag:'Email Submit', tagClass:'email', title:'$100 Nike Gift Card', desc:'Enter your email for a chance to win', payout:'$2.99', url:OFFER_BASE+'75217', recommended:false },
-      { emoji:'🎫', tag:'Credit Card', tagClass:'cc', title:'AARP Membership — $15/yr', desc:'Join AARP to unlock instantly', payout:'$10.27', url:OFFER_BASE+'75159', recommended:false }
-    ],
-    'GB-android': [
-      { emoji:'🎮', tag:'Mobile Install', tagClass:'mobile', title:'Just Games — Free Install', desc:'Download the free game app to unlock instantly', payout:'$6.42', url:OFFER_BASE+'73942', recommended:true },
-      { emoji:'🎁', tag:'Email Submit', tagClass:'email', title:'$100 Nike Gift Card', desc:'Enter your email for a chance to win', payout:'$2.99', url:OFFER_BASE+'75217', recommended:false },
-      { emoji:'💄', tag:'Email Submit', tagClass:'email', title:'$100 Ulta Gift Card', desc:'Enter your email for a chance to win', payout:'$3.08', url:OFFER_BASE+'74437', recommended:false }
-    ],
-    'GB-desktop': [
-      { emoji:'🎁', tag:'Email Submit', tagClass:'email', title:'$100 Nike Gift Card', desc:'Enter your email for a chance to win', payout:'$2.99', url:OFFER_BASE+'75217', recommended:true },
-      { emoji:'💄', tag:'Email Submit', tagClass:'email', title:'$100 Ulta Gift Card', desc:'Enter your email for a chance to win', payout:'$3.08', url:OFFER_BASE+'74437', recommended:false },
-      { emoji:'🎫', tag:'Credit Card', tagClass:'cc', title:'AARP Membership — $15/yr', desc:'Join AARP to unlock instantly', payout:'$10.27', url:OFFER_BASE+'75158', recommended:false }
-    ],
-    'SI-ios': [
-      { emoji:'📱', tag:'Pin Submit', tagClass:'pin', title:'Mobilna Verifikacija', desc:'Vnesite mobilno številko za odklepanje', payout:'$6.84', url:OFFER_BASE+'49886', recommended:true },
-      { emoji:'🎁', tag:'Email Submit', tagClass:'email', title:'$100 Nike Gift Card', desc:'Enter your email for a chance to win', payout:'$2.99', url:OFFER_BASE+'75217', recommended:false },
-      { emoji:'💄', tag:'Email Submit', tagClass:'email', title:'$100 Ulta Gift Card', desc:'Enter your email for a chance to win', payout:'$3.08', url:OFFER_BASE+'74437', recommended:false }
-    ],
-    'PL-ios': [
-      { emoji:'📱', tag:'Pin Submit', tagClass:'pin', title:'Weryfikacja Mobilna', desc:'Wprowadź numer telefonu aby odblokować', payout:'$5.48', url:OFFER_BASE+'74133', recommended:true },
-      { emoji:'🎁', tag:'Email Submit', tagClass:'email', title:'$100 Nike Gift Card', desc:'Enter your email for a chance to win', payout:'$2.99', url:OFFER_BASE+'75217', recommended:false },
-      { emoji:'💄', tag:'Email Submit', tagClass:'email', title:'$100 Ulta Gift Card', desc:'Enter your email for a chance to win', payout:'$3.08', url:OFFER_BASE+'74437', recommended:false }
-    ],
-    'ES-ios': [
-      { emoji:'💳', tag:'Credit Card', tagClass:'cc', title:'Fitstream Suscripción', desc:'Suscríbete con tu tarjeta de crédito para desbloquear', payout:'$2.99', url:OFFER_BASE+'68978', recommended:true },
-      { emoji:'🎁', tag:'Email Submit', tagClass:'email', title:'$100 Nike Gift Card', desc:'Enter your email for a chance to win', payout:'$2.99', url:OFFER_BASE+'75217', recommended:false },
-      { emoji:'💄', tag:'Email Submit', tagClass:'email', title:'$100 Ulta Gift Card', desc:'Enter your email for a chance to win', payout:'$3.08', url:OFFER_BASE+'74437', recommended:false }
-    ]
-  };
-
-  var FALLBACK = {
-    desktop: OFFERS['US-desktop'],
-    android: OFFERS['US-android'],
-    ios: OFFERS['US-ios']
-  };
-
-  function pickOffers(){
-    var key = geo.code + '-' + device;
-    if(OFFERS[key]) return OFFERS[key];
-    if(FALLBACK[device]) return FALLBACK[device];
-    return FALLBACK.desktop;
-  }
-
-  function renderOffers(){
-    var list = pickOffers();
-    var grid = document.getElementById('offers-grid');
-    if(!grid) return;
-    var html = '';
-    list.forEach(function(o){
-      html += '<a href="' + o.url + '" target="_blank" rel="nofollow noopener noreferrer" class="offer-card' + (o.recommended ? ' recommended' : '') + '" data-offer-title="' + o.title + '">';
-      html += '<div class="offer-top">';
-      html += '<div class="offer-emoji" aria-hidden="true">' + o.emoji + '</div>';
-      html += '<div class="offer-body">';
-      html += '<span class="offer-tag ' + o.tagClass + '">' + o.tag + '</span>';
-      html += '<div class="offer-title">' + o.title + '</div>';
-      html += '<div class="offer-desc">' + o.desc + '</div>';
-      html += '</div></div>';
-      html += '<div class="offer-footer">';
-      html += '<span class="offer-payout">&#10003; ' + o.payout + ' value</span>';
-      html += '<span class="offer-cta">Start now &rarr;</span>';
-      html += '</div>';
-      html += '</a>';
-    });
-    grid.innerHTML = html;
-    grid.querySelectorAll('.offer-card').forEach(function(card){
-      card.addEventListener('click', function(){
-        track('offer_click', { offer_title: card.getAttribute('data-offer-title'), landing_page: 'budget-meal-prep-guide' });
-      });
-    });
-  }
-
-  var revealBtn = document.getElementById('reveal-offers-btn');
-  var offersPanel = document.getElementById('offers-panel');
-  var teaser = document.getElementById('gate-teaser');
-  var emailCard = document.getElementById('email-capture-card');
-  // v6: render offers on page load so every visitor sees them (no click required)
-  try {
-    renderOffers();
-    var _op = document.getElementById('offers-panel');
-    if (_op) {
-      _op.classList.add('open');
-      _op.setAttribute('aria-hidden', 'false');
-      _op.style.display = 'block';
+    if (divider) {
+      divider.style.display = 'flex';
+      divider.style.opacity = '0';
+      setTimeout(function () {
+        divider.style.transition = 'opacity .4s ease';
+        divider.style.opacity = '1';
+      }, 10);
     }
-  } catch (e) { console.warn('renderOffers on load failed:', e); }
 
-  if(revealBtn){
-    revealBtn.addEventListener('click', function(){
-      renderOffers();
-      // Hide both email card and teaser when sponsor path is chosen
-      if (emailCard) {
-        emailCard.style.transition = 'opacity .35s ease, transform .35s ease';
-        emailCard.style.opacity = '0';
-        emailCard.style.transform = 'scale(.96)';
-        setTimeout(function(){ emailCard.style.display = 'none'; }, 300);
-      }
-      teaser.style.transition = 'opacity .35s ease, transform .35s ease';
-      teaser.style.opacity = '0';
-      teaser.style.transform = 'scale(.96)';
-      setTimeout(function(){
-        teaser.style.display = 'none';
-        offersPanel.classList.add('open');
-        offersPanel.setAttribute('aria-hidden', 'false');
-        track('content_unlocked');
-        setTimeout(function(){
-          var y = offersPanel.getBoundingClientRect().top + window.pageYOffset - 100;
-          window.scrollTo({ top: y, behavior: 'smooth' });
-        }, 100);
-      }, 300);
-    });
-  }
-
-  window.cpaCallback = function(){
-    var t = document.getElementById('gate-teaser');
-    var o = document.getElementById('offers-panel');
-    var u = document.getElementById('gate-unlocked');
-    var e = document.getElementById('email-capture-card');
-    if(t) t.style.display = 'none';
-    if(o) o.style.display = 'none';
-    if(e) e.style.display = 'none';
-    if(u){
-      u.style.display = 'block';
-      setTimeout(function(){
-        var y = u.getBoundingClientRect().top + window.pageYOffset - 100;
+    emailCard.style.display = 'block';
+    emailCard.style.opacity = '0';
+    emailCard.style.transform = 'translateY(12px)';
+    setTimeout(function () {
+      emailCard.style.transition = 'opacity .5s ease, transform .5s ease';
+      emailCard.style.opacity = '1';
+      emailCard.style.transform = 'translateY(0)';
+      setTimeout(function () {
+        var y = emailCard.getBoundingClientRect().top + window.pageYOffset - 120;
         window.scrollTo({ top: y, behavior: 'smooth' });
-      }, 150);
-    }
-    hideSticky();
-    track('content_unlocked');
-  };
-  window.cpbCallback = window.cpaCallback;
+      }, 200);
+    }, 10);
 
-  var sticky = document.getElementById('sticky');
-  var gateEl = document.getElementById('gate');
-  var unlockedEl = document.getElementById('gate-unlocked');
-
-  function hideSticky(){ if(sticky) sticky.classList.remove('show'); }
-
-  if(gateEl && sticky && 'IntersectionObserver' in window){
-    var obs = new IntersectionObserver(function(entries){
-      if(unlockedEl && unlockedEl.style.display === 'block'){ sticky.classList.remove('show'); return; }
-      if(entries[0].isIntersecting){ sticky.classList.remove('show'); }
-      else { sticky.classList.add('show'); }
-    }, { threshold: 0 });
-    obs.observe(gateEl);
-  }
-
-  (function(){
-    var sections = document.querySelectorAll('.section');
-    if(!sections.length || !('IntersectionObserver' in window)){
-      sections.forEach(function(s){ s.classList.add('visible'); });
-      return;
-    }
-    var obs2 = new IntersectionObserver(function(entries){
-      entries.forEach(function(e){
-        if(e.isIntersecting){ e.target.classList.add('visible'); obs2.unobserve(e.target); }
+    if (typeof window.empireTrack === 'function') {
+      var cfg = window.EMPIRE_OFFER_CONFIG || {};
+      window.empireTrack('email_form_revealed', {
+        slug: cfg.slug || null,
+        offerId: (e && e.detail && e.detail.offerId) || null,
+        offerTitle: (e && e.detail && e.detail.offerTitle) || null
       });
-    }, { threshold: 0.08, rootMargin: '0px 0px -50px 0px' });
-    sections.forEach(function(s){ obs2.observe(s); });
-  })();
-
-  var SUPABASE_URL = 'https://qujlyrmatuvlpoeheqgf.supabase.co';
-  var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF1amx5cm1hdHV2bHBvZWhlcWdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwOTE5NDUsImV4cCI6MjA2NzY2Nzk0NX0.PgIRCU_-r6o-u6AIhj52FE1iezdwt3wpi-a9zQvAdsc';
-
-  function sessionId(){
-    try{
-      var sid = sessionStorage.getItem('empire_sid');
-      if(!sid){ sid = 's_' + Math.random().toString(36).slice(2,11) + Date.now().toString(36); sessionStorage.setItem('empire_sid', sid); }
-      return sid;
-    }catch(e){ return null; }
-  }
-  var sid = sessionId();
-
-  function referrer(){
-    var r = document.referrer || '';
-    if(!r) return 'direct';
-    if(/t\.co|twitter|x\.com/i.test(r)) return 'twitter';
-    if(/t\.me|telegram/i.test(r)) return 'telegram';
-    if(/google/i.test(r)) return 'google';
-    if(/facebook|fb\.com/i.test(r)) return 'facebook';
-    if(/instagram/i.test(r)) return 'instagram';
-    if(/reddit/i.test(r)) return 'reddit';
-    if(/linkedin/i.test(r)) return 'linkedin';
-    return 'referral';
-  }
-
-  function urlParam(n){
-    var m = location.search.match(new RegExp('[?&]'+n+'=([^&]*)'));
-    return m ? decodeURIComponent(m[1]) : null;
-  }
-
-  function track(type, extra){
-    // Legacy shim (v4) � forwards to the unified tracker from empire-tracker.js
-    if (window.__empireRealTrack) window.__empireRealTrack(type, extra);
-  }
-
-  track('pageview');
-
-  var startTime = Date.now();
-  var unloaded = false;
-  window.addEventListener('pagehide', function(){
-    if(unloaded) return;
-    unloaded = true;
-    track('page_unload', { time_on_page_seconds: Math.round((Date.now()-startTime)/1000) });
+    }
   });
 
-  var fired = {};
-  window.addEventListener('scroll', function(){
-    var top = window.pageYOffset || document.documentElement.scrollTop;
-    var h = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-    if(h <= 0) return;
-    var pct = top / h;
-    [25,50,75,90].forEach(function(m){
-      if(!fired[m] && pct > m/100){ fired[m] = true; track('scroll_' + m); }
-    });
-  }, { passive: true });
-
-  document.querySelectorAll('.related-link').forEach(function(link){
-    link.addEventListener('click', function(){
+  // Related-link click tracking
+  document.querySelectorAll('.related-link').forEach(function (link) {
+    link.addEventListener('click', function () {
+      if (typeof window.empireTrack !== 'function') return;
       var t = (link.querySelector('.related-title') || {}).textContent || null;
-      track('related_link_click', { offer_title: t, href: link.getAttribute('href') });
-    });
-  });
-
-  // CTA bottom + sticky buttons trigger the sponsor path
-  document.querySelectorAll('[data-unlock-trigger]').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      var gate = document.getElementById('gate');
-      if (gate) gate.scrollIntoView({behavior:'smooth',block:'center'});
-      setTimeout(function(){
-        var r = document.getElementById('reveal-offers-btn');
-        if (r) r.click();
-      }, 500);
+      window.empireTrack('related_link_click', {
+        offer_title: t,
+        href: link.getAttribute('href')
+      });
     });
   });
 
   // Cookie consent
   try {
-    if (localStorage.getItem('empire_cookie_ok') === '1') {
-      // already accepted
-    } else {
-      var banner = document.getElementById('cookie-banner');
-      if (banner) banner.hidden = false;
-      var btn = document.getElementById('cookie-accept');
-      if (btn) btn.addEventListener('click', function(){
-        try { localStorage.setItem('empire_cookie_ok', '1'); } catch(e){}
-        banner.hidden = true;
+    if (localStorage.getItem('empire_cookie_ok') !== '1') {
+      var cb = document.getElementById('cookie-banner');
+      if (cb) cb.hidden = false;
+      var cbtn = document.getElementById('cookie-accept');
+      if (cbtn) cbtn.addEventListener('click', function () {
+        try { localStorage.setItem('empire_cookie_ok', '1'); } catch(e) {}
+        cb.hidden = true;
       });
     }
-  } catch(e) {}
+  } catch (e) {}
 
 })();
 </script>
 
-<script src="../empire-tracker.js?v=6"></script>
-<script>window.__empireRealTrack = window.empireTrack;</script>
 </body>
 </html>
