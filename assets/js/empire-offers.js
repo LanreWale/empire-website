@@ -249,32 +249,47 @@
     }
 
     // ── Render offer cards ──
-    function renderOffers() {
-        var list = pickOffers();
-        var grid = document.getElementById('offers-grid');
-        if (!grid) return;
-        var html = '';
-        list.forEach(function (o) {
-            html += '<a href="' + o.url + '" target="_blank" rel="nofollow noopener noreferrer" class="offer-card' + (o.recommended ? ' recommended' : '') + '"';
-            html += ' data-offer-id="' + escapeAttr(o.offerId || '') + '"';
-            html += ' data-offer-title="' + escapeAttr(o.title) + '"';
-            html += ' data-offer-tag="' + escapeAttr(o.tag) + '">';
-            html += '<div class="offer-top">';
-            html += '<div class="offer-emoji" aria-hidden="true">' + o.emoji + '</div>';
-            html += '<div class="offer-body">';
-            html += '<span class="offer-tag ' + o.tagClass + '">' + o.tag + '</span>';
-            html += '<div class="offer-title">' + o.title + '</div>';
-            html += '<div class="offer-desc">' + o.desc + '</div>';
-            html += '</div></div>';
-            html += '<div class="offer-footer">';
-            html += '<span class="offer-payout">&#10003; ' + o.sponsor + '</span>';
-            html += '<span class="offer-cta">Start now &rarr;</span>';
-            html += '</div>';
-            html += '</a>';
-        });
-        grid.innerHTML = html;
-    }
+function renderOffers() {
+    var list = pickOffers();
+    var grid = document.getElementById('offers-grid');
+    if (!grid) return;
+    var html = '';
+    list.forEach(function (o) {
+        html += '<a href="' + o.url + '" target="_blank" rel="nofollow noopener noreferrer" class="offer-card' + (o.recommended ? ' recommended' : '') + '"';
+        html += ' data-offer-id="' + escapeAttr(o.offerId || '') + '"';
+        html += ' data-offer-title="' + escapeAttr(o.title) + '"';
+        html += ' data-offer-tag="' + escapeAttr(o.tag) + '">';
+        html += '<div class="offer-top">';
+        html += '<div class="offer-emoji" aria-hidden="true">' + o.emoji + '</div>';
+        html += '<div class="offer-body">';
+        html += '<span class="offer-tag ' + o.tagClass + '">' + o.tag + '</span>';
+        html += '<div class="offer-title">' + o.title + '</div>';
+        html += '<div class="offer-desc">' + o.desc + '</div>';
+        html += '</div></div>';
+        html += '<div class="offer-footer">';
+        html += '<span class="offer-payout">&#10003; ' + o.sponsor + '</span>';
+        html += '<span class="offer-cta">Start now &rarr;</span>';
+        html += '</div>';
+        html += '</a>';
+    });
+    grid.innerHTML = html;
 
+    // v4.1: dispatch a custom event on offer click so pages can reveal
+    // the email form (B2 flow — offer first, email second).
+    grid.querySelectorAll('.offer-card').forEach(function (card) {
+        card.addEventListener('click', function () {
+            try {
+                window.dispatchEvent(new CustomEvent('empire_offer_clicked', {
+                    detail: {
+                        offerId: card.getAttribute('data-offer-id') || null,
+                        offerTitle: card.getAttribute('data-offer-title') || null,
+                        slug: CFG.slug || null
+                    }
+                }));
+            } catch (e) {}
+        });
+    });
+}
     // ── Element refs ──
     var revealBtn = document.getElementById('reveal-offers-btn');
     var offersPanel = document.getElementById('offers-panel');
