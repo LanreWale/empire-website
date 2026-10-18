@@ -1,10 +1,18 @@
-﻿/* ============================================================
-   EMPIRE REWARDS — ANALYTICS TRACKER v4.1
+/* ============================================================
+   EMPIRE REWARDS — ANALYTICS TRACKER v4.2
    Single source of truth. No inline duplicates.
-   v4.1 changes:
-     - MutationObserver re-observes offer cards injected after load
-     - content_unlocked used instead of offers_revealed (matches dashboard)
-     - unlock_click used instead of unlock_clicked (matches dashboard)
+
+   v4.2 changes (from v4.1):
+     - OFFER_URL_PATTERN now matches rileymarker.com, filetrkr.com,
+       motifiles.com (NG offers + future accounts) in addition to
+       singingfiles.com
+     - gemini added to AI referrer detection
+     - removed duplicate referrer_url in pageview call
+     - removed offer_id: urlParam('id') from auto pageview
+       (pageviews are not offer events)
+     - removed auto-fire pageview — page scripts call
+       empireTrack('pageview') explicitly, once, on load.
+       Fixes the double-pageview bug that inflated analytics.
    ============================================================ */
 (function () {
     'use strict';
@@ -29,20 +37,11 @@
     var SUPABASE_KEY = CFG.supabaseKey || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF1amx5cm1hdHV2bHBvZWhlcWdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwOTE5NDUsImV4cCI6MjA2NzY2Nzk0NX0.PgIRCU_-r6o-u6AIhj52FE1iezdwt3wpi-a9zQvAdsc';
     var ENDPOINT = SUPABASE_URL + '/rest/v1/analytics';
 
-    // ── Page sanitizer (added v4.2) ──
-    // Normalizes any pathname into a bare ".html" filename so the
-    // Analytics dashboard can match it against EMPIRE_LANDING_PAGES.
-    // Examples:
-    //   "/offers/budget-home-organization"              -> "budget-home-organization.html"
-    //   "/offers/budget-home-organization.html"         -> "budget-home-organization.html"
-    //   "C:/Users/.../budget-home-organization.html"    -> "budget-home-organization.html"
-    //   "/"                                              -> "index.html"
+    // ── Page sanitizer ──
     function sanitizePage(raw) {
         if (!raw) return 'unknown.html';
         var s = String(raw);
-        // Strip query and hash first
         s = s.split('?')[0].split('#')[0];
-        // Strip Windows-style and POSIX-style paths
         s = s.split('\\').pop();
         s = s.split('/').pop();
         s = s.trim();
@@ -50,8 +49,7 @@
         return s.slice(-5) === '.html' ? s : s + '.html';
     }
 
-
-        // ── Session & page identity ──
+    // ── Session & page identity ──
     function generateSessionId() {
         return 's_' + Math.random().toString(36).slice(2, 11) + Date.now().toString(36);
     }
@@ -64,7 +62,6 @@
             }
             return sid;
         } catch (e) {
-            // Any storage error (private mode, quota, blocked) → fresh in-memory ID
             return generateSessionId();
         }
     }
@@ -138,12 +135,10 @@
     var country = getCountry();
 
     // ── Referrer classification ──
-        function classifyReferrer() {
+    function classifyReferrer() {
         var ref = document.referrer || '';
         if (!ref) return 'direct';
-        // Internal cross-links — do not attribute to external channels
         if (/empireaffiliatemarketinghub\.com/i.test(ref)) return 'internal';
-        // External channels
         if (/t\.co|twitter\.com|x\.com/i.test(ref)) return 'twitter';
         if (/t\.me|telegram/i.test(ref)) return 'telegram';
         if (/google/i.test(ref)) return 'google';
@@ -157,6 +152,7 @@
         if (/chatgpt\.com|chat\.openai\.com/i.test(ref)) return 'chatgpt';
         if (/perplexity\.ai/i.test(ref)) return 'perplexity';
         if (/claude\.ai/i.test(ref)) return 'claude';
+        if (/gemini\.google\.com|bard\.google\.com/i.test(ref)) return 'gemini';
         return 'referral';
     }
 
@@ -169,7 +165,7 @@
     }
 
     // ── Payload builder ──
-        function buildPayload(eventType, extra) {
+    function buildPayload(eventType, extra) {
         var payload = {
             event_type: eventType,
             page: sanitizePage(window.location.pathname),
@@ -177,7 +173,6 @@
             device: device,
             country: country,
             browser: getBrowser(),
-            // referrer = the actual referrer classification (never utm_source)
             referrer: classifyReferrer(),
             referrer_url: document.referrer || null,
             session_id: sessionId || getSessionId(),
@@ -198,7 +193,7 @@
     }
 
     // ── Send ──
-        function send(payload) {
+    function send(payload) {
         if (!payload) return;
         if (!payload.session_id) payload.session_id = getSessionId();
         try {
@@ -222,12 +217,9 @@
     };
     window.empireTrackCritical = window.empireTrack;
 
-    // ── Fire pageview ──
-    window.empireTrack('pageview', {
-        referrer_url: document.referrer || null,
-        offer_id: urlParam('id') || null,
-        landing_page: sanitizePage(window.location.pathname)
-    });
+    // NOTE: pageview is NOT auto-fired. Each page calls
+    // empireTrack('pageview') once on load. This prevents
+    // the double-pageview bug (tracker + inline script both firing).
 
     // ── Page unload (time-on-page) ──
     var loadTime = Date.now();
@@ -237,7 +229,6 @@
         unloaded = true;
         send(buildPayload('page_unload', {
             time_on_page_seconds: Math.round((Date.now() - loadTime) / 1000),
-            offer_id: urlParam('id') || null,
             landing_page: sanitizePage(window.location.pathname)
         }));
     }
@@ -247,7 +238,8 @@
     });
 
     // ── Offer click tracking (delegated) ──
-    var OFFER_URL_PATTERN = /singingfiles\.com|cpagrip|cpalead|optilinklock\.com|bearmobiles\.com|quartzfiles\.com/i;
+    // v4.2: added rileymarker.com, filetrkr.com, motifiles.com
+    var OFFER_URL_PATTERN = /singingfiles\.com|rileymarker\.com|filetrkr\.com|motifiles\.com|cpagrip|cpalead|optilinklock\.com|bearmobiles\.com|quartzfiles\.com/i;
     document.addEventListener('click', function (e) {
         var el = e.target;
         while (el && el.tagName !== 'A' && el !== document.body) el = el.parentElement;
@@ -321,14 +313,12 @@
             });
         }
 
-        // Initial pass
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', observeOffers);
         } else {
             observeOffers();
         }
 
-        // Re-observe whenever the DOM changes (offer cards injected after load)
         try {
             var mo = new MutationObserver(function () {
                 observeOffers();
@@ -337,7 +327,7 @@
         } catch (e) {}
     })();
 
-    // ── Unlock / reveal public API (call these from your page scripts) ──
+    // ── Unlock / reveal public API ──
     window.empireUnlockShown = function (offerId) {
         window.empireTrack('unlock_shown', { offer_id: offerId || null });
     };
@@ -347,13 +337,22 @@
     window.empireOffersRevealed = function (offerId) {
         window.empireTrack('content_unlocked', { offer_id: offerId || null });
     };
-    // Backwards-compat aliases
     window.empireUnlockClick = window.empireUnlockClicked;
     window.empireContentUnlocked = window.empireOffersRevealed;
 
     // ── PostMessage listener for CPA conversion callbacks ──
+    // v4.2: accept cpagrip.com, rileymarker.com, and same-origin
+    var TRUSTED_ORIGINS = [
+        window.location.origin,
+        'https://www.cpagrip.com',
+        'https://cpagrip.com',
+        'https://rileymarker.com',
+        'https://filetrkr.com',
+        'https://singingfiles.com',
+        'https://motifiles.com'
+    ];
     window.addEventListener('message', function (e) {
-        if (e.origin !== window.location.origin) return;
+        if (TRUSTED_ORIGINS.indexOf(e.origin) === -1) return;
         if (e.data && e.data.type === 'cpagrip_conversion') {
             window.empireTrack('conversion', {
                 offer_id: e.data.offer_id || null,
