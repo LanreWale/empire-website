@@ -1,6 +1,14 @@
 /* ============================================================
-   EMPIRE REWARDS — ANALYTICS TRACKER v4.2
+   EMPIRE REWARDS — ANALYTICS TRACKER v4.3
    Single source of truth. No inline duplicates.
+
+   v4.3 changes (from v4.2):
+     - Session ID exposed as window.__empire_sid so that
+       empire-offers.js can attach it as &subid= in offer URLs.
+       This guarantees the CPA postback tracking_id matches
+       analytics.session_id exactly, enabling end-to-end
+       attribution (cpa_events JOIN analytics on tracking_id =
+       session_id). Fixes attribution blindness on conversions.
 
    v4.2 changes (from v4.1):
      - OFFER_URL_PATTERN now matches rileymarker.com, filetrkr.com,
@@ -66,6 +74,12 @@
         }
     }
     var sessionId = getSessionId() || generateSessionId();
+
+    // v4.3: expose session ID globally for empire-offers.js to
+    // attach as &subid= in offer URLs. Guarantees CPA postback
+    // tracking_id === analytics.session_id.
+    if (sessionId) window.__empire_sid = sessionId;
+
     var pageLoadId = 'p_' + Math.random().toString(36).slice(2, 11) + Date.now().toString(36);
 
     // ── Device ──
@@ -238,7 +252,6 @@
     });
 
     // ── Offer click tracking (delegated) ──
-    // v4.2: added rileymarker.com, filetrkr.com, motifiles.com
     var OFFER_URL_PATTERN = /singingfiles\.com|rileymarker\.com|filetrkr\.com|motifiles\.com|cpagrip|cpalead|optilinklock\.com|bearmobiles\.com|quartzfiles\.com/i;
     document.addEventListener('click', function (e) {
         var el = e.target;
@@ -341,7 +354,6 @@
     window.empireContentUnlocked = window.empireOffersRevealed;
 
     // ── PostMessage listener for CPA conversion callbacks ──
-    // v4.2: accept cpagrip.com, rileymarker.com, and same-origin
     var TRUSTED_ORIGINS = [
         window.location.origin,
         'https://www.cpagrip.com',
