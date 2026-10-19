@@ -1,8 +1,24 @@
 /* ============================================================
-   EMPIRE REWARDS — SHARED OFFER PAGE LOGIC v4
+   EMPIRE REWARDS — SHARED OFFER PAGE LOGIC v4.2
    Load AFTER attribution.js and empire-tracker.js.
 
    Requires window.EMPIRE_OFFER_CONFIG = { slug: 'page-slug' }
+
+   v4.2 changes (from v4.1):
+     - Offers now carry &subid=<session_id> in their URLs.
+       This is the CPA attribution link: when CPAGrip receives a
+       click with subid set, its postback returns tracking_id =
+       session_id, which allows cpa_events rows to be JOINed back
+       to analytics.session_id for full attribution (landing page,
+       UTM source, country, etc.).
+     - Session_id is read from sessionStorage. If empire-tracker.js
+       hasn't yet set it, it's generated inline using the identical
+       formula, so the value is consistent across the page lifecycle.
+
+   v4.1 changes (from v4):
+     - Dispatch empire_offer_clicked custom event on offer click so
+       the page's B2 flow can reveal the email form after an offer
+       is chosen.
 
    v4 changes (from v3):
      - NG (Nigeria) offers added via rileymarker.com / Account #1 (1533836)
@@ -31,8 +47,6 @@
 
         // ══════════════════════════════════════════
         // NIGERIA — Account #1 (rileymarker.com)
-        // Added because Nigerian visitors were geo-restricted
-        // on US/EU offers. All payouts $0.20 but live & payable.
         // ══════════════════════════════════════════
         'NG-android': [
             { emoji: '📱', tag: 'Email Submit', tagClass: 'email', title: 'Win a Samsung Galaxy S25', desc: 'Enter your email to claim your entry', sponsor: 'Verified Partner', offerId: '69174', url: BASE_RILEY + '69174', recommended: true },
@@ -174,8 +188,6 @@
     };
 
     // ── Fallback: US ──
-    // v3 had fallback = GB. v4 reverts to US because Pinterest traffic
-    // is US-heavy and US offers have the highest converter density.
     var FALLBACK = {
         desktop: OFFERS['US-desktop'],
         android: OFFERS['US-android'],
@@ -193,20 +205,15 @@
     function getGeoCode() {
         try {
             var tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-            // ── NG (Nigeria) — must come before generic Africa/ fallback ──
             if (/Africa\/Lagos/.test(tz)) return 'NG';
-            // ── Primary English-speaking markets ──
             if (/Europe\/London/.test(tz)) return 'GB';
             if (/^Australia\//.test(tz)) return 'AU';
             if (/America\/Toronto|America\/Vancouver|America\/Edmonton|America\/Winnipeg|America\/Halifax/.test(tz)) return 'CA';
-            // ── US ──
             if (/^America\//.test(tz)) return 'US';
-            // ── Secondary Pin Submit markets ──
             if (/Europe\/Ljubljana/.test(tz)) return 'SI';
             if (/Europe\/Warsaw/.test(tz)) return 'PL';
             if (/Europe\/Madrid/.test(tz)) return 'ES';
             if (/Europe\/Berlin|Europe\/Busingen/.test(tz)) return 'DE';
-            // ── Generic fallbacks ──
             if (/^Europe\//.test(tz)) return 'GB';
             if (/^Africa\//.test(tz)) return 'NG';
             return 'US';
@@ -248,48 +255,74 @@
         return String(str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
-    // ── Render offer cards ──
-function renderOffers() {
-    var list = pickOffers();
-    var grid = document.getElementById('offers-grid');
-    if (!grid) return;
-    var html = '';
-    list.forEach(function (o) {
-        html += '<a href="' + o.url + '" target="_blank" rel="nofollow noopener noreferrer" class="offer-card' + (o.recommended ? ' recommended' : '') + '"';
-        html += ' data-offer-id="' + escapeAttr(o.offerId || '') + '"';
-        html += ' data-offer-title="' + escapeAttr(o.title) + '"';
-        html += ' data-offer-tag="' + escapeAttr(o.tag) + '">';
-        html += '<div class="offer-top">';
-        html += '<div class="offer-emoji" aria-hidden="true">' + o.emoji + '</div>';
-        html += '<div class="offer-body">';
-        html += '<span class="offer-tag ' + o.tagClass + '">' + o.tag + '</span>';
-        html += '<div class="offer-title">' + o.title + '</div>';
-        html += '<div class="offer-desc">' + o.desc + '</div>';
-        html += '</div></div>';
-        html += '<div class="offer-footer">';
-        html += '<span class="offer-payout">&#10003; ' + o.sponsor + '</span>';
-        html += '<span class="offer-cta">Start now &rarr;</span>';
-        html += '</div>';
-        html += '</a>';
-    });
-    grid.innerHTML = html;
+    // ── Session ID resolver ──
+    // Used to propagate session_id as subid in offer URLs. Prefers
+    // window.__empire_sid (exposed by empire-tracker.js if available),
+    // falls back to sessionStorage, generates inline if neither works.
+    // The formula matches empire-tracker.js exactly so the value is
+    // consistent between analytics events and CPA postbacks.
+    function resolveSessionId() {
+        try {
+            if (window.__empire_sid) return window.__empire_sid;
+            var sid = sessionStorage.getItem('empire_sid');
+            if (!sid) {
+                sid = 's_' + Math.random().toString(36).slice(2, 11) + Date.now().toString(36);
+                sessionStorage.setItem('empire_sid', sid);
+            }
+            return sid;
+        } catch (e) { return ''; }
+    }
 
-    // v4.1: dispatch a custom event on offer click so pages can reveal
-    // the email form (B2 flow — offer first, email second).
-    grid.querySelectorAll('.offer-card').forEach(function (card) {
-        card.addEventListener('click', function () {
-            try {
-                window.dispatchEvent(new CustomEvent('empire_offer_clicked', {
-                    detail: {
-                        offerId: card.getAttribute('data-offer-id') || null,
-                        offerTitle: card.getAttribute('data-offer-title') || null,
-                        slug: CFG.slug || null
-                    }
-                }));
-            } catch (e) {}
+    // ── Render offer cards ──
+    function renderOffers() {
+        var list = pickOffers();
+        var grid = document.getElementById('offers-grid');
+        if (!grid) return;
+
+        // CPA attribution: propagate session_id as subid so postbacks
+        // can be JOINed back to analytics.session_id.
+        var sid = resolveSessionId();
+        var subidSuffix = sid ? '&subid=' + encodeURIComponent(sid) : '';
+
+        var html = '';
+        list.forEach(function (o) {
+            var clickUrl = o.url + subidSuffix;
+            html += '<a href="' + clickUrl + '" target="_blank" rel="nofollow noopener noreferrer" class="offer-card' + (o.recommended ? ' recommended' : '') + '"';
+            html += ' data-offer-id="' + escapeAttr(o.offerId || '') + '"';
+            html += ' data-offer-title="' + escapeAttr(o.title) + '"';
+            html += ' data-offer-tag="' + escapeAttr(o.tag) + '">';
+            html += '<div class="offer-top">';
+            html += '<div class="offer-emoji" aria-hidden="true">' + o.emoji + '</div>';
+            html += '<div class="offer-body">';
+            html += '<span class="offer-tag ' + o.tagClass + '">' + o.tag + '</span>';
+            html += '<div class="offer-title">' + o.title + '</div>';
+            html += '<div class="offer-desc">' + o.desc + '</div>';
+            html += '</div></div>';
+            html += '<div class="offer-footer">';
+            html += '<span class="offer-payout">&#10003; ' + o.sponsor + '</span>';
+            html += '<span class="offer-cta">Start now &rarr;</span>';
+            html += '</div>';
+            html += '</a>';
         });
-    });
-}
+        grid.innerHTML = html;
+
+        // Dispatch a custom event on offer click so pages can reveal
+        // the email form (B2 flow — offer first, email second).
+        grid.querySelectorAll('.offer-card').forEach(function (card) {
+            card.addEventListener('click', function () {
+                try {
+                    window.dispatchEvent(new CustomEvent('empire_offer_clicked', {
+                        detail: {
+                            offerId: card.getAttribute('data-offer-id') || null,
+                            offerTitle: card.getAttribute('data-offer-title') || null,
+                            slug: CFG.slug || null
+                        }
+                    }));
+                } catch (e) {}
+            });
+        });
+    }
+
     // ── Element refs ──
     var revealBtn = document.getElementById('reveal-offers-btn');
     var offersPanel = document.getElementById('offers-panel');
@@ -313,9 +346,8 @@ function renderOffers() {
         }
     }
 
-    // ── Render offers on load (v4 — offers are primary CTA) ──
+    // ── Render offers on load ──
     // Offers render immediately, no gate, no click required.
-    // The email form is now BELOW the offers in the DOM.
     try {
         renderOffers();
         if (offersPanel) {
@@ -327,7 +359,7 @@ function renderOffers() {
         console.warn('renderOffers on load failed:', e);
     }
 
-    // ── Reveal handler (kept for backward compat if a page still has the button) ──
+    // ── Reveal handler (backward compat) ──
     if (revealBtn) {
         revealBtn.addEventListener('click', function () {
             renderOffers();
@@ -429,6 +461,7 @@ function renderOffers() {
             detectedDevice: device,
             routeKey: geoCode + '-' + device,
             matched: OFFERS[geoCode + '-' + device] ? 'exact' : 'fallback',
+            sessionId: resolveSessionId(),
             offers: pickOffers()
         };
     };
