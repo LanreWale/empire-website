@@ -862,7 +862,7 @@ window.EMPIRE_OFFER_CONFIG = {
 
   var successTimer = setInterval(function(){
     if (!container) return;
-    var success = container.querySelector('.emailoctopus-success, [class*="success"], [class*="thank"]');
+    var success = container.querySelector('.emailoctopus-success-message:not(:empty)');
     if (success) {
       clearInterval(successTimer);
       if (typeof window.empireOnEmailSuccess === 'function') {
