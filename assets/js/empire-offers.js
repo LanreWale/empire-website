@@ -229,7 +229,7 @@
     // UNLOCK GATE — REQUIRES BOTH email submit AND offer completion
     // State persists to sessionStorage so it survives page navigation.
     // ============================================================
-    var STORAGE_KEY = 'empire_unlock_state_v431';
+    var STORAGE_KEY = 'empire_unlock_state_v431_' + (CFG.slug || 'default');
 
     var empireState = (function () {
         try {
