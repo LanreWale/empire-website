@@ -224,33 +224,18 @@ body>*{position:relative;z-index:1}
 .preview li:last-child{border-bottom:none}
 .preview li::before{content:'✓';flex-shrink:0;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#22c55e,var(--c-success));color:#fff;font-size:.7rem;font-weight:700;border-radius:50%;box-shadow:0 3px 10px rgba(22,163,74,.3)}
 
+.pin-preview{max-width:420px;margin:0 auto 32px;background:#fff;border:1px solid var(--c-line);border-radius:var(--r-lg);padding:20px;box-shadow:var(--sh-md);text-align:center}
+.pin-preview-label{font-family:'Fraunces',serif;font-size:1.05rem;font-weight:600;letter-spacing:-.015em;color:var(--c-ink);margin-bottom:14px}
+.pin-preview-wrap{display:block;border-radius:var(--r);overflow:hidden;border:1px solid var(--c-line-soft);transition:transform .3s var(--ease),box-shadow .3s var(--ease)}
+.pin-preview-wrap:hover{transform:translateY(-3px);box-shadow:var(--sh-lg)}
+.pin-preview-wrap img{display:block;width:100%;height:auto}
+.pin-preview-hint{font-size:.72rem;color:var(--c-ink-muted);line-height:1.65;margin-top:14px}
+.pin-preview-hint strong{color:var(--c-primary);font-weight:600}
+
 .gate{max-width:580px;margin:0 auto 48px;position:relative}
 
-.gate-teaser{background:radial-gradient(circle at 50% 0%,rgba(52,211,153,.12) 0%,transparent 60%),linear-gradient(180deg,#ffffff 0%,#f9fdfb 100%);border:2px solid var(--c-primary);border-radius:var(--r-xl);padding:3rem 2.25rem 2.5rem;text-align:center;box-shadow:0 0 0 1px rgba(5,150,105,.10),var(--sh-xl);position:relative;overflow:hidden;opacity:0;animation:slideIn .9s var(--ease-out) .3s forwards}
-.gate-teaser::before{content:'FREE DOWNLOAD';position:absolute;top:0;left:50%;transform:translate(-50%,-50%);background:linear-gradient(135deg,var(--c-primary-bright),var(--c-primary));color:#fff;font-size:.6rem;font-weight:600;letter-spacing:.2em;padding:6px 22px;border-radius:100px;white-space:nowrap;box-shadow:0 6px 20px rgba(5,150,105,.4)}
-.gate-teaser::after{content:'';position:absolute;top:-60%;left:-60%;width:220%;height:220%;background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.55) 50%,transparent 60%);transform:translateX(-100%);animation:shimmer 5s ease-in-out infinite;pointer-events:none}
-@keyframes shimmer{0%,65%{transform:translateX(-100%)}85%{transform:translateX(100%)}100%{transform:translateX(100%)}}
-
-.gate-lock{margin-bottom:1.35rem;display:flex;justify-content:center;animation:gatePulse 2.4s ease-in-out infinite}
-.gate-lock svg{stroke:var(--c-primary);filter:drop-shadow(0 10px 24px rgba(5,150,105,.32))}
-@keyframes gatePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
-
-.gate-title{font-family:'Fraunces',serif;font-size:1.65rem;font-weight:600;letter-spacing:-.025em;color:var(--c-ink);margin:0 0 .6rem;line-height:1.2}
-.gate-desc{color:var(--c-ink-soft);font-size:.88rem;margin:0 auto 1.85rem;line-height:1.7;max-width:400px}
-
-.gate-btn{display:inline-flex;align-items:center;gap:.55rem;background:linear-gradient(135deg,var(--c-primary-bright) 0%,var(--c-primary) 100%);color:#fff;font-family:'DM Mono',monospace;font-size:.9rem;font-weight:600;padding:1.05rem 2.35rem;border:none;border-radius:var(--r);cursor:pointer;transition:all .35s var(--ease);box-shadow:var(--sh-glow);letter-spacing:.03em;position:relative;overflow:hidden}
-.gate-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent 30%,rgba(255,255,255,.3) 50%,transparent 70%);transform:translateX(-100%);transition:transform .7s var(--ease)}
-.gate-btn:hover{transform:translateY(-3px);box-shadow:0 20px 48px rgba(5,150,105,.42),0 8px 16px rgba(5,150,105,.22)}
-.gate-btn:hover::after{transform:translateX(100%)}
-.gate-btn:active{transform:translateY(-1px)}
-.gate-btn svg{stroke:#fff;transition:transform .35s var(--ease)}
-.gate-btn:hover svg{transform:translateX(4px)}
-
-.gate-trust{display:flex;justify-content:center;gap:1.2rem;margin-top:1.6rem;flex-wrap:wrap;font-size:.68rem;color:var(--c-ink-muted);letter-spacing:.02em}
-.gate-trust span{display:inline-flex;align-items:center;gap:.3rem}
-
 .offers-panel{max-height:0;overflow:hidden;opacity:0;transition:max-height .7s var(--ease),opacity .5s var(--ease),margin-top .5s var(--ease);margin-top:0}
-.offers-panel.open{max-height:2400px;opacity:1;margin-top:24px}
+.offers-panel.open{max-height:2400px;opacity:1;margin-top:0}
 .offers-intro{text-align:center;font-size:.78rem;color:var(--c-ink-muted);margin-bottom:1.2rem;line-height:1.6}
 
 .offers-grid{display:grid;grid-template-columns:1fr;gap:14px}
@@ -279,7 +264,8 @@ body>*{position:relative;z-index:1}
 .offer-cta{display:inline-flex;align-items:center;gap:.35rem;font-size:.72rem;font-weight:600;color:var(--c-primary);letter-spacing:.02em;transition:gap .3s var(--ease)}
 .offer-card:hover .offer-cta{gap:.6rem}
 
-.gate-unlocked{display:none;background:radial-gradient(circle at 50% 0%,rgba(22,163,74,.08) 0%,transparent 60%),linear-gradient(180deg,#ffffff,#f0fdf4);border:2px solid var(--c-success-border);border-radius:var(--r-xl);padding:3rem 2.25rem 2.5rem;text-align:center;box-shadow:0 20px 60px rgba(22,163,74,.15);animation:unlockIn .7s var(--ease-out) forwards}
+.gate-unlocked{display:none !important;background:radial-gradient(circle at 50% 0%,rgba(22,163,74,.08) 0%,transparent 60%),linear-gradient(180deg,#ffffff,#f0fdf4);border:2px solid var(--c-success-border);border-radius:var(--r-xl);padding:3rem 2.25rem 2.5rem;text-align:center;box-shadow:0 20px 60px rgba(22,163,74,.15);animation:unlockIn .7s var(--ease-out) forwards}
+.gate-unlocked.is-unlocked{display:block !important}
 @keyframes unlockIn{from{opacity:0;transform:scale(.94) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
 .unlock-check{display:flex;justify-content:center;margin-bottom:1.25rem}
 .unlock-check svg{stroke:var(--c-success);filter:drop-shadow(0 12px 24px rgba(22,163,74,.32));animation:checkPop .6s var(--ease-out)}
@@ -289,7 +275,6 @@ body>*{position:relative;z-index:1}
 .unlock-btn{display:inline-flex;align-items:center;gap:.55rem;background:linear-gradient(135deg,#22c55e,var(--c-success));color:#fff;font-family:'DM Mono',monospace;font-size:.9rem;font-weight:600;padding:1.05rem 2.35rem;border-radius:var(--r);text-decoration:none;transition:all .35s var(--ease);box-shadow:0 12px 32px rgba(22,163,74,.32);letter-spacing:.02em}
 .unlock-btn:hover{transform:translateY(-3px);box-shadow:0 20px 48px rgba(22,163,74,.42)}
 
-/* Universal email capture form */
 .email-capture-card{background:radial-gradient(circle at 50% 0%,rgba(52,211,153,.10) 0%,transparent 60%),linear-gradient(180deg,#ffffff 0%,#f9fdfb 100%);border:2px solid var(--c-primary);border-radius:var(--r-xl);padding:2.6rem 2.1rem 2.2rem;text-align:center;box-shadow:0 0 0 1px rgba(5,150,105,.10),0 30px 70px rgba(6,95,70,.12);position:relative;overflow:hidden;margin-bottom:20px;opacity:0;animation:slideIn .9s var(--ease-out) .25s forwards}
 .email-capture-card::before{content:'PRIMARY PATH · FREE INSTANT DOWNLOAD';position:absolute;top:0;left:50%;transform:translate(-50%,-50%);background:linear-gradient(135deg,var(--c-primary-bright),var(--c-primary));color:#fff;font-size:.58rem;font-weight:600;letter-spacing:.2em;padding:6px 20px;border-radius:100px;white-space:nowrap;box-shadow:0 6px 20px rgba(5,150,105,.4)}
 .email-capture-card h2{font-family:'Fraunces',serif;font-size:1.55rem;font-weight:600;letter-spacing:-.025em;color:var(--c-ink);margin:0 0 .55rem;line-height:1.2}
@@ -335,7 +320,6 @@ body>*{position:relative;z-index:1}
 .benefit h4{font-size:.86rem;font-weight:600;margin-bottom:5px;color:var(--c-ink);letter-spacing:-.005em}
 .benefit p{font-size:.76rem;color:var(--c-ink-muted);line-height:1.65;margin-bottom:0}
 
-/* Table styles */
 .table-wrap{overflow-x:auto;margin:20px 0}
 table.data-table{width:100%;border-collapse:collapse;font-size:.8rem;min-width:520px}
 table.data-table th{text-align:left;padding:12px 14px;background:var(--c-primary-soft);color:var(--c-primary-dark);font-weight:600;letter-spacing:.02em;border-bottom:2px solid var(--c-line);font-size:.72rem;text-transform:uppercase}
@@ -344,7 +328,6 @@ table.data-table tr:last-child td{border-bottom:none}
 table.data-table tr:hover td{background:var(--c-paper-warm)}
 table.data-table td strong{color:var(--c-ink)}
 
-/* Calendar preview */
 .calendar-preview{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:24px 0}
 .cal-week{background:linear-gradient(180deg,#fff,#f8fdfa);border:1px solid var(--c-line);border-radius:var(--r);padding:18px 16px}
 .cal-week h4{font-family:'Fraunces',serif;font-size:.92rem;font-weight:600;color:var(--c-primary-dark);margin-bottom:10px;letter-spacing:-.01em}
@@ -378,15 +361,6 @@ table.data-table td strong{color:var(--c-ink)}
 .related-emoji{font-size:1.5rem;display:block;margin-bottom:10px}
 .related-title{font-size:.78rem;font-weight:500;color:var(--c-ink);line-height:1.45;letter-spacing:-.005em}
 
-.sticky{display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(251,255,252,.94);backdrop-filter:blur(20px) saturate(1.5);-webkit-backdrop-filter:blur(20px) saturate(1.5);border-top:2px solid var(--c-primary);padding:14px 20px;z-index:99;box-shadow:0 -8px 36px rgba(5,95,70,.12)}
-.sticky.show{display:block;animation:slideUp .5s var(--ease-out) forwards}
-@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.sticky-inner{max-width:1080px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:14px}
-.sticky-text{font-size:.83rem;color:var(--c-ink);font-weight:500;letter-spacing:-.005em}
-.sticky-text span{color:var(--c-primary);font-weight:600}
-.sticky-btn{padding:12px 28px;background:linear-gradient(135deg,var(--c-primary-bright),var(--c-primary));color:#fff;border:none;border-radius:var(--r);font-family:'DM Mono',monospace;font-weight:600;font-size:.82rem;cursor:pointer;white-space:nowrap;transition:all .3s var(--ease);box-shadow:0 8px 22px rgba(5,150,105,.3);letter-spacing:.02em}
-.sticky-btn:hover{transform:translateY(-2px);box-shadow:0 14px 34px rgba(5,150,105,.4)}
-
 .footer{text-align:center;padding:3rem 1.5rem 2rem;border-top:1px solid var(--c-line);margin-top:3rem;background:linear-gradient(180deg,transparent,rgba(236,253,245,.5));position:relative}
 .footer::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:70px;height:3px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--c-primary),transparent);opacity:.6}
 .footer-links{display:flex;justify-content:center;gap:1.7rem;margin-bottom:20px;flex-wrap:wrap}
@@ -401,17 +375,16 @@ table.data-table td strong{color:var(--c-ink)}
 @media (max-width:600px){
   .nav-links{display:none}.hero{padding:16px 8px 4px;margin-bottom:40px}.hero-icon{font-size:2.8rem;margin-bottom:14px}.hero h1{font-size:1.7rem}.hero p{font-size:.85rem}.hero-meta{gap:.6rem;margin-top:20px}.hero-meta-item{font-size:.62rem;padding:6px 12px}
   .preview{padding:26px 22px 18px}.preview h2{font-size:1.15rem}
-  .gate-teaser{padding:2.5rem 1.5rem 2rem}.gate-title{font-size:1.35rem}.gate-btn{width:100%;justify-content:center;padding:.95rem 1.5rem}
   .email-capture-card{padding:2.5rem 1.5rem 2rem}.email-capture-card h2{font-size:1.3rem}
   .gate-unlocked{padding:2.5rem 1.5rem 2rem}.unlock-title{font-size:1.35rem}.unlock-btn{width:100%;justify-content:center;padding:.95rem 1.5rem}
   .section{padding:28px 22px}.section h2{font-size:1.3rem}.stat-num{font-size:2rem}
   .related{padding:24px 20px}.related-grid{grid-template-columns:1fr}
   .calendar-preview{grid-template-columns:1fr}
-  .sticky-inner{flex-direction:column;text-align:center}.sticky-text{font-size:.75rem}.sticky-btn{width:100%}
+  .pin-preview{padding:16px}
   .footer{padding:2rem 1.25rem 1.5rem}.footer-disclosure{padding:14px 16px;font-size:.66rem !important}
 }
-@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;animation-delay:0ms !important;transition-duration:.01ms !important}.section{opacity:1;transform:none}.gate-teaser::after,body::after{display:none}.email-capture-card,.or-divider{opacity:1;animation:none}}
-@media print{.header,.trust-bar,.gate,.related,.footer,.geo-banner,.sticky,body::before,body::after{display:none !important}.lp{padding:0;max-width:100%}.section{border:1px solid #ccc;break-inside:avoid;box-shadow:none;opacity:1;transform:none}body{background:#fff}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;animation-delay:0ms !important;transition-duration:.01ms !important}.section{opacity:1;transform:none}body::after{display:none}}
+@media print{.header,.trust-bar,.gate,.related,.footer,.geo-banner,body::before,body::after{display:none !important}.lp{padding:0;max-width:100%}.section{border:1px solid #ccc;break-inside:avoid;box-shadow:none;opacity:1;transform:none}body{background:#fff}}
 </style>
 </head>
 <body>
@@ -486,9 +459,6 @@ table.data-table td strong{color:var(--c-ink)}
     </div>
   </section>
 
-  <!-- ------------------------------------------------------------
-       PINTEREST SAVE — Static pin preview
-       ------------------------------------------------------------ -->
   <section class="pin-preview">
     <div class="pin-preview-label">Save this for later</div>
     <a href="/offers/budget-meal-prep-guide.html" class="pin-preview-wrap" aria-label="Preview of the pin for this offer">
@@ -499,13 +469,6 @@ table.data-table td strong{color:var(--c-ink)}
     </p>
   </section>
 
-  <!-- ════════════════════════════════════════════════════════════
-       B2 FLOW — OFFER GATE
-       Offers render first (primary path). Email form is hidden
-       until the visitor clicks an offer. This forces offer
-       engagement before email submission, preventing the
-       "grab freebie and leave" leak that killed Week 1 conversions.
-       ════════════════════════════════════════════════════════════ -->
   <section class="gate" id="gate">
 
     <div class="offers-panel open" id="offers-panel" aria-hidden="false">
@@ -830,13 +793,9 @@ table.data-table td strong{color:var(--c-ink)}
 </div>
 
 <script>
-/* ════════════════════════════════════════════════════════════
-   UNIVERSAL EMAIL CAPTURE CONFIG
-   ════════════════════════════════════════════════════════════ */
 window.EMPIRE_EMAIL_CONFIG = {
   provider: 'emailoctopus',
   embedScript: '<script async src="https://eomail5.com/form/eb1edfcc-c0ef-11f1-bd33-d557cd46b867.js" data-form="eb1edfcc-c0ef-11f1-bd33-d557cd46b867"><\/script>',
-  fallbackToSponsorOffer: false,
   embedTimeout: 4000,
   embedContainer: 'emailoctopus-embed'
 };
@@ -847,31 +806,23 @@ window.EMPIRE_OFFER_CONFIG = {
 };
 </script>
 
-<!--
-  SCRIPT LOAD ORDER (critical):
-  1. empire-tracker.js v4.2 — must load first so window.empireTrack exists
-     for empire-offers.js and page inline code
-  2. attribution.js — reads UTM params, writes to sessionStorage
-  3. empire-offers.js v4.1 — renders offers, dispatches empire_offer_clicked
-  4. empire-ribbon.js — cosmetic ribbon
-  5. Inline page scripts — B2 flow, email capture, related-link tracking
--->
 <script src="../empire-tracker.js?v=8"></script>
 <script>window.__empireRealTrack = window.empireTrack;</script>
 <script src="/assets/js/attribution.js?v=3"></script>
-<script src="/assets/js/empire-offers.js?v=4"></script>
+<script src="/assets/js/empire-offers.js?v=6"></script>
 <script src="/assets/js/empire-ribbon.js"></script>
 
 <script>
 /* ════════════════════════════════════════════════════════════
    UNIVERSAL EMAIL CAPTURE — LOADER + SUCCESS WATCHER
+   Delegates unlock decision to empire-offers.js which
+   requires BOTH email AND offer completion.
    ════════════════════════════════════════════════════════════ */
 (function(){
   'use strict';
 
   var cfg = window.EMPIRE_EMAIL_CONFIG || {};
   var container = document.getElementById(cfg.embedContainer || 'emailoctopus-embed');
-  var unlocked = document.getElementById('gate-unlocked');
 
   function injectEmailOctopusEmbed(){
     if (!cfg.embedScript || !container) return false;
@@ -909,18 +860,13 @@ window.EMPIRE_OFFER_CONFIG = {
     init();
   }
 
-  // Watch for EmailOctopus success
   var successTimer = setInterval(function(){
     if (!container) return;
     var success = container.querySelector('.emailoctopus-success, [class*="success"], [class*="thank"]');
     if (success) {
       clearInterval(successTimer);
-      if (unlocked) {
-        unlocked.style.display = 'block';
-        setTimeout(function(){
-          var y = unlocked.getBoundingClientRect().top + window.pageYOffset - 100;
-          window.scrollTo({ top: y, behavior: 'smooth' });
-        }, 200);
+      if (typeof window.empireOnEmailSuccess === 'function') {
+        window.empireOnEmailSuccess();
       }
       if (typeof window.empireTrack === 'function') {
         window.empireTrack('email_form_submitted', { provider: cfg.provider || 'unknown' });
@@ -939,12 +885,10 @@ window.EMPIRE_OFFER_CONFIG = {
 (function(){
   'use strict';
 
-  // Fire pageview once (empire-tracker v4.2 no longer auto-fires it)
   if (typeof window.empireTrack === 'function') {
     window.empireTrack('pageview');
   }
 
-  // Reveal email form + divider when any offer card is clicked
   window.addEventListener('empire_offer_clicked', function (e) {
     var divider = document.getElementById('unlock-divider');
     var emailCard = document.getElementById('email-capture-card');
@@ -982,7 +926,6 @@ window.EMPIRE_OFFER_CONFIG = {
     }
   });
 
-  // Related-link click tracking
   document.querySelectorAll('.related-link').forEach(function (link) {
     link.addEventListener('click', function () {
       if (typeof window.empireTrack !== 'function') return;
@@ -994,7 +937,6 @@ window.EMPIRE_OFFER_CONFIG = {
     });
   });
 
-  // Cookie consent
   try {
     if (localStorage.getItem('empire_cookie_ok') !== '1') {
       var cb = document.getElementById('cookie-banner');
