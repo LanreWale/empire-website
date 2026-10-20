@@ -1,8 +1,20 @@
 /* ============================================================
-   EMPIRE REWARDS — SHARED OFFER PAGE LOGIC v4.2
+   EMPIRE REWARDS — SHARED OFFER PAGE LOGIC v4.3
    Load AFTER attribution.js and empire-tracker.js.
 
    Requires window.EMPIRE_OFFER_CONFIG = { slug: 'page-slug' }
+
+   v4.3 changes (from v4.2):
+     - Download now requires BOTH email submit AND offer completion.
+       Neither alone unlocks. Prevents the revenue leak where a
+       postback alone could reveal the download.
+     - State tracked in memory: { emailSubmitted, offerCompleted }
+     - Class-based unlock (.is-unlocked) replaces inline style toggle
+       so no accidental display:block can leak the download.
+     - Removed returning-visitor shortcut (was bypassing the gate
+       for 30 days after a single offer — the primary leak).
+     - New public hook window.empireOnEmailSuccess() for the page's
+       inline email-success watcher to signal email submission.
 
    v4.2 changes (from v4.1):
      - Offers now carry &subid=<session_id> in their URLs.
@@ -45,9 +57,6 @@
     // ============================================================
     var OFFERS = {
 
-        // ══════════════════════════════════════════
-        // NIGERIA — Account #1 (rileymarker.com)
-        // ══════════════════════════════════════════
         'NG-android': [
             { emoji: '📱', tag: 'Email Submit', tagClass: 'email', title: 'Win a Samsung Galaxy S25', desc: 'Enter your email to claim your entry', sponsor: 'Verified Partner', offerId: '69174', url: BASE_RILEY + '69174', recommended: true },
             { emoji: '🎧', tag: 'Email Submit', tagClass: 'email', title: 'Get AirPods Max', desc: 'Enter your email for a chance to win', sponsor: 'Verified Partner', offerId: '70154', url: BASE_RILEY + '70154', recommended: false },
@@ -64,9 +73,6 @@
             { emoji: '🎁', tag: 'Email Submit', tagClass: 'email', title: 'Win a $100 Gift Card', desc: 'Quick email entry to claim your spot', sponsor: 'Verified Partner', offerId: '69174', url: BASE_RILEY + '69174', recommended: false }
         ],
 
-        // ══════════════════════════════════════════
-        // UNITED STATES — Account #2 (singingfiles.com)
-        // ══════════════════════════════════════════
         'US-desktop': [
             { emoji: '🎁', tag: 'Email Submit', tagClass: 'email', title: 'Win a $100 Nike Gift Card', desc: 'Enter your email for a chance to win', sponsor: 'Verified Partner', offerId: '75217', url: BASE_SINGING + '75217', recommended: true },
             { emoji: '💄', tag: 'Email Submit', tagClass: 'email', title: 'Win a $100 Ulta Gift Card', desc: 'Quick email entry for a chance to win', sponsor: 'Verified Partner', offerId: '74437', url: BASE_SINGING + '74437', recommended: false },
@@ -83,9 +89,6 @@
             { emoji: '🎫', tag: 'Credit Card', tagClass: 'cc', title: 'AARP Membership — $15/yr', desc: 'Join AARP to unlock instantly', sponsor: 'Verified Partner', offerId: '75158', url: BASE_SINGING + '75158', recommended: false }
         ],
 
-        // ══════════════════════════════════════════
-        // UNITED KINGDOM — Account #2
-        // ══════════════════════════════════════════
         'GB-desktop': [
             { emoji: '🎮', tag: 'App Install', tagClass: 'mobile', title: 'Start Playing Just Games Now', desc: 'Download now to get started', sponsor: 'Verified Partner', offerId: '73942', url: BASE_SINGING + '73942', recommended: true },
             { emoji: '🎁', tag: 'Email Submit', tagClass: 'email', title: 'Win a $100 Nike Gift Card', desc: 'Enter your email for a chance to win', sponsor: 'Verified Partner', offerId: '75217', url: BASE_SINGING + '75217', recommended: false },
@@ -102,9 +105,6 @@
             { emoji: '💄', tag: 'Email Submit', tagClass: 'email', title: 'Win a $100 Ulta Gift Card', desc: 'Enter your email for a chance to win', sponsor: 'Verified Partner', offerId: '74437', url: BASE_SINGING + '74437', recommended: false }
         ],
 
-        // ══════════════════════════════════════════
-        // AUSTRALIA — Account #2
-        // ══════════════════════════════════════════
         'AU-desktop': [
             { emoji: '🎁', tag: 'Email Submit', tagClass: 'email', title: 'Win a $100 Nike Gift Card', desc: 'Enter your email for a chance to win', sponsor: 'Verified Partner', offerId: '75217', url: BASE_SINGING + '75217', recommended: true },
             { emoji: '💄', tag: 'Email Submit', tagClass: 'email', title: 'Win a $100 Ulta Gift Card', desc: 'Enter your email for a chance to win', sponsor: 'Verified Partner', offerId: '74437', url: BASE_SINGING + '74437', recommended: false },
@@ -121,9 +121,6 @@
             { emoji: '🎮', tag: 'App Install', tagClass: 'mobile', title: 'Just Games — Free Install', desc: 'Download the free game app to unlock', sponsor: 'Verified Partner', offerId: '73895', url: BASE_SINGING + '73895', recommended: false }
         ],
 
-        // ══════════════════════════════════════════
-        // CANADA — Account #2
-        // ══════════════════════════════════════════
         'CA-desktop': [
             { emoji: '🎁', tag: 'Email Submit', tagClass: 'email', title: 'Win a $100 Nike Gift Card', desc: 'Enter your email for a chance to win', sponsor: 'Verified Partner', offerId: '75217', url: BASE_SINGING + '75217', recommended: true },
             { emoji: '💄', tag: 'Email Submit', tagClass: 'email', title: 'Win a $100 Ulta Gift Card', desc: 'Enter your email for a chance to win', sponsor: 'Verified Partner', offerId: '74437', url: BASE_SINGING + '74437', recommended: false },
@@ -140,9 +137,6 @@
             { emoji: '🎮', tag: 'App Install', tagClass: 'mobile', title: 'Just Games — Free Install', desc: 'Download the free game app to unlock', sponsor: 'Verified Partner', offerId: '73895', url: BASE_SINGING + '73895', recommended: false }
         ],
 
-        // ══════════════════════════════════════════
-        // GERMANY — Account #2
-        // ══════════════════════════════════════════
         'DE-desktop': [
             { emoji: '🎁', tag: 'Email Submit', tagClass: 'email', title: 'Win a $100 Nike Gift Card', desc: 'Enter your email for a chance to win', sponsor: 'Verified Partner', offerId: '75217', url: BASE_SINGING + '75217', recommended: true },
             { emoji: '💄', tag: 'Email Submit', tagClass: 'email', title: 'Win a $100 Ulta Gift Card', desc: 'Enter your email for a chance to win', sponsor: 'Verified Partner', offerId: '74437', url: BASE_SINGING + '74437', recommended: false },
@@ -159,27 +153,18 @@
             { emoji: '🎫', tag: 'Credit Card', tagClass: 'cc', title: 'AARP Membership — $15/yr', desc: 'Join AARP to unlock instantly', sponsor: 'Verified Partner', offerId: '75158', url: BASE_SINGING + '75158', recommended: false }
         ],
 
-        // ══════════════════════════════════════════
-        // SLOVENIA — Account #2
-        // ══════════════════════════════════════════
         'SI-ios': [
             { emoji: '📱', tag: 'Pin Submit', tagClass: 'pin', title: 'Mobilna Verifikacija', desc: 'Vnesite mobilno številko za odklepanje', sponsor: 'Verified Partner', offerId: '49886', url: BASE_SINGING + '49886', recommended: true },
             { emoji: '🎁', tag: 'Email Submit', tagClass: 'email', title: 'Win a $100 Nike Gift Card', desc: 'Enter your email for a chance to win', sponsor: 'Verified Partner', offerId: '75217', url: BASE_SINGING + '75217', recommended: false },
             { emoji: '💄', tag: 'Email Submit', tagClass: 'email', title: 'Win a $100 Ulta Gift Card', desc: 'Enter your email for a chance to win', sponsor: 'Verified Partner', offerId: '74437', url: BASE_SINGING + '74437', recommended: false }
         ],
 
-        // ══════════════════════════════════════════
-        // POLAND — Account #2
-        // ══════════════════════════════════════════
         'PL-ios': [
             { emoji: '📱', tag: 'Pin Submit', tagClass: 'pin', title: 'Weryfikacja Mobilna', desc: 'Wprowadź numer telefonu aby odblokować', sponsor: 'Verified Partner', offerId: '74133', url: BASE_SINGING + '74133', recommended: true },
             { emoji: '🎁', tag: 'Email Submit', tagClass: 'email', title: 'Win a $100 Nike Gift Card', desc: 'Enter your email for a chance to win', sponsor: 'Verified Partner', offerId: '75217', url: BASE_SINGING + '75217', recommended: false },
             { emoji: '💄', tag: 'Email Submit', tagClass: 'email', title: 'Win a $100 Ulta Gift Card', desc: 'Enter your email for a chance to win', sponsor: 'Verified Partner', offerId: '74437', url: BASE_SINGING + '74437', recommended: false }
         ],
 
-        // ══════════════════════════════════════════
-        // SPAIN — Account #2
-        // ══════════════════════════════════════════
         'ES-ios': [
             { emoji: '💳', tag: 'Credit Card', tagClass: 'cc', title: 'Fitstream Suscripción', desc: 'Suscríbete con tu tarjeta para desbloquear', sponsor: 'Verified Partner', offerId: '68978', url: BASE_SINGING + '68978', recommended: true },
             { emoji: '🎁', tag: 'Email Submit', tagClass: 'email', title: 'Win a $100 Nike Gift Card', desc: 'Enter your email for a chance to win', sponsor: 'Verified Partner', offerId: '75217', url: BASE_SINGING + '75217', recommended: false },
@@ -187,7 +172,6 @@
         ]
     };
 
-    // ── Fallback: US ──
     var FALLBACK = {
         desktop: OFFERS['US-desktop'],
         android: OFFERS['US-android'],
@@ -242,7 +226,6 @@
         banner.classList.add('show');
     }
 
-    // ── Offer picker ──
     function pickOffers() {
         var key = geoCode + '-' + device;
         if (OFFERS[key]) return OFFERS[key];
@@ -250,17 +233,11 @@
         return FALLBACK.desktop;
     }
 
-    // ── Escape helper ──
     function escapeAttr(str) {
         return String(str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
     // ── Session ID resolver ──
-    // Used to propagate session_id as subid in offer URLs. Prefers
-    // window.__empire_sid (exposed by empire-tracker.js if available),
-    // falls back to sessionStorage, generates inline if neither works.
-    // The formula matches empire-tracker.js exactly so the value is
-    // consistent between analytics events and CPA postbacks.
     function resolveSessionId() {
         try {
             if (window.__empire_sid) return window.__empire_sid;
@@ -273,14 +250,48 @@
         } catch (e) { return ''; }
     }
 
+    // ============================================================
+    // UNLOCK GATE — REQUIRES BOTH email submit AND offer completion
+    // Neither alone unlocks. Both flags must be true.
+    // ============================================================
+    var empireState = {
+        emailSubmitted: false,    // set when EmailOctopus reports success
+        offerCompleted: false     // set when CPAGrip postback arrives
+    };
+
+    function tryUnlock() {
+        if (!empireState.emailSubmitted || !empireState.offerCompleted) {
+            return; // one or both missing — stay locked
+        }
+        var u = document.getElementById('gate-unlocked');
+        if (u) {
+            u.classList.add('is-unlocked');
+            setTimeout(function () {
+                var y = u.getBoundingClientRect().top + window.pageYOffset - 100;
+                window.scrollTo({ top: y, behavior: 'smooth' });
+            }, 150);
+        }
+        hideSticky();
+        if (window.empireTrack) {
+            window.empireTrack('content_unlocked', {
+                slug: CFG.slug || null,
+                reason: 'email_and_offer_complete'
+            });
+        }
+    }
+
+    // Public hook — page's inline email watcher calls this on success
+    window.empireOnEmailSuccess = function () {
+        empireState.emailSubmitted = true;
+        tryUnlock();
+    };
+
     // ── Render offer cards ──
     function renderOffers() {
         var list = pickOffers();
         var grid = document.getElementById('offers-grid');
         if (!grid) return;
 
-        // CPA attribution: propagate session_id as subid so postbacks
-        // can be JOINed back to analytics.session_id.
         var sid = resolveSessionId();
         var subidSuffix = sid ? '&subid=' + encodeURIComponent(sid) : '';
 
@@ -306,8 +317,6 @@
         });
         grid.innerHTML = html;
 
-        // Dispatch a custom event on offer click so pages can reveal
-        // the email form (B2 flow — offer first, email second).
         grid.querySelectorAll('.offer-card').forEach(function (card) {
             card.addEventListener('click', function () {
                 try {
@@ -329,25 +338,7 @@
     var teaser = document.getElementById('gate-teaser');
     var unlockedEl = document.getElementById('gate-unlocked');
 
-    // ── Returning visitor: skip the gate entirely ──
-    var RETURNING_KEY = 'empire_unlocked_' + (CFG.slug || 'default');
-    var isReturning = false;
-    try {
-        var stamp = parseInt(localStorage.getItem(RETURNING_KEY) || '0', 10);
-        if (stamp && (Date.now() - stamp) < 30 * 24 * 60 * 60 * 1000) isReturning = true;
-    } catch (e) {}
-
-    if (isReturning && teaser && unlockedEl) {
-        teaser.style.display = 'none';
-        if (offersPanel) offersPanel.style.display = 'none';
-        unlockedEl.style.display = 'block';
-        if (window.empireTrack) {
-            window.empireTrack('returning_visitor_unlock', { slug: CFG.slug || null });
-        }
-    }
-
     // ── Render offers on load ──
-    // Offers render immediately, no gate, no click required.
     try {
         renderOffers();
         if (offersPanel) {
@@ -383,28 +374,21 @@
         });
     }
 
-    // ── Unlock callback (called by CPAGrip postback page) ──
-    function unlockDownload() {
-        var t = document.getElementById('gate-teaser');
-        var o = document.getElementById('offers-panel');
-        var u = document.getElementById('gate-unlocked');
-        if (t) t.style.display = 'none';
-        if (o) o.style.display = 'none';
-        if (u) {
-            u.style.display = 'block';
-            try { localStorage.setItem(RETURNING_KEY, String(Date.now())); } catch (e) {}
-            setTimeout(function () {
-                var y = u.getBoundingClientRect().top + window.pageYOffset - 100;
-                window.scrollTo({ top: y, behavior: 'smooth' });
-            }, 150);
-        }
-        hideSticky();
-        if (window.empireTrack) {
-            window.empireTrack('content_unlocked', { slug: CFG.slug || null });
-        }
+    // ── CPAGrip postback callback — marks offer completed, not unlock by itself ──
+    function onOfferComplete() {
+        empireState.offerCompleted = true;
+        tryUnlock();
     }
-    window.cpaCallback = unlockDownload;
-    window.cpbCallback = unlockDownload;
+    window.cpaCallback = onOfferComplete;
+    window.cpbCallback = onOfferComplete;
+
+    // ── Check for ?cpa=1 on load (CPAGrip redirect-based postback) ──
+    try {
+        var urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('cpa') === '1' || urlParams.get('conversion') === '1') {
+            onOfferComplete();
+        }
+    } catch (e) {}
 
     // ── Sticky CTA visibility ──
     var sticky = document.getElementById('sticky');
@@ -414,7 +398,8 @@
     }
     if (gateEl && sticky && 'IntersectionObserver' in window) {
         var obs = new IntersectionObserver(function (entries) {
-            if (unlockedEl && unlockedEl.style.display === 'block') {
+            var u = document.getElementById('gate-unlocked');
+            if (u && u.classList.contains('is-unlocked')) {
                 sticky.classList.remove('show');
                 return;
             }
@@ -462,6 +447,7 @@
             routeKey: geoCode + '-' + device,
             matched: OFFERS[geoCode + '-' + device] ? 'exact' : 'fallback',
             sessionId: resolveSessionId(),
+            state: { emailSubmitted: empireState.emailSubmitted, offerCompleted: empireState.offerCompleted },
             offers: pickOffers()
         };
     };
