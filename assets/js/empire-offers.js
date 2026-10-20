@@ -1,44 +1,38 @@
 /* ============================================================
-   EMPIRE REWARDS — SHARED OFFER PAGE LOGIC v4.3.1
+   EMPIRE REWARDS — SHARED OFFER PAGE LOGIC v4.3.2
    Load AFTER attribution.js and empire-tracker.js.
 
    Requires window.EMPIRE_OFFER_CONFIG = { slug: 'page-slug' }
 
+   v4.3.2 changes (from v4.3.1):
+     - Replaced ?cpa=1 redirect-based completion detection with
+       server-verified polling. Browser now asks the Supabase
+       Edge Function "has CPAGrip sent an S2S postback for this
+       session_id?" every 5 seconds for up to ~2.5 minutes.
+     - This works with CPAGrip's actual S2S-only postback system
+       (no redirect URLs required, no URL param bypass).
+     - Removed ?cpa=1 handler, cpaCallback, cpbCallback globals —
+       they were the previous bypass mechanism.
+     - Polling starts automatically after email submit and on
+       page load for users with emailSubmitted=true but
+       offerCompleted=false.
+     - Session storage still persists unlock state across page
+       navigations (needed for CPAGrip return trip).
+
    v4.3.1 changes (from v4.3):
-     - empireState now persists to sessionStorage so it survives
+     - empireState persists to sessionStorage so it survives
        page navigation (critical for CPAGrip redirect flow).
-     - tryUnlock() auto-runs on load for returning users whose
-       flags were restored from sessionStorage.
-     - Without this, the flow was broken: email submit → navigate
-       to offer → CPAGrip redirect → page reload → in-memory state
-       reset to false → gate locked despite completing both steps.
-     - sessionStorage clears on tab close, so each browser session
-       requires a fresh offer+email flow (correct behavior).
 
    v4.3 changes (from v4.2):
-     - Download now requires BOTH email submit AND offer completion.
-       Neither alone unlocks. Prevents the revenue leak where a
-       postback alone could reveal the download.
-     - State tracked: { emailSubmitted, offerCompleted }
-     - Class-based unlock (.is-unlocked) replaces inline style toggle
-       so no accidental display:block can leak the download.
-     - Removed returning-visitor shortcut (was bypassing the gate
-       for 30 days after a single offer — the primary leak).
-     - New public hook window.empireOnEmailSuccess() for the page's
-       inline email-success watcher to signal email submission.
+     - Download requires BOTH email submit AND offer completion.
+     - Class-based unlock (.is-unlocked) replaces inline style.
+     - New public hook window.empireOnEmailSuccess().
 
    v4.2 changes (from v4.1):
-     - Offers now carry &subid=<session_id> in their URLs.
+     - Offers carry &subid=<session_id> in their URLs.
 
    v4.1 changes (from v4):
      - Dispatch empire_offer_clicked custom event on offer click.
-
-   v4 changes (from v3):
-     - NG (Nigeria) offers added via rileymarker.com / Account #1
-     - US support RESTORED
-     - Fallback changed from GB to US for unknown geos
-     - data-offer-id and data-offer-tag emitted on every card
-     - window.EMPIRE_getOffers() exposed for console debugging
    ============================================================ */
 (function () {
     'use strict';
@@ -47,6 +41,9 @@
 
     var BASE_SINGING = 'https://singingfiles.com/show.php?l=0&u=2548035&id=';
     var BASE_RILEY   = 'https://rileymarker.com/show.php?l=0&u=1533836&id=';
+
+    // Supabase Edge Function endpoint for conversion status checks
+    var POSTBACK_CHECK_URL = 'https://qujlyrmatuvlpoeheqgf.supabase.co/functions/v1/cpa-postback-receiver';
 
     var OFFERS = {
         'NG-android': [
@@ -228,8 +225,10 @@
     // ============================================================
     // UNLOCK GATE — REQUIRES BOTH email submit AND offer completion
     // State persists to sessionStorage so it survives page navigation.
+    // Offer completion is verified by polling the Supabase Edge
+    // Function (server-side source of truth for CPAGrip postbacks).
     // ============================================================
-    var STORAGE_KEY = 'empire_unlock_state_v431_' + (CFG.slug || 'default');
+    var STORAGE_KEY = 'empire_unlock_state_v432_' + (CFG.slug || 'default');
 
     var empireState = (function () {
         try {
@@ -249,6 +248,62 @@
         try {
             sessionStorage.setItem(STORAGE_KEY, JSON.stringify(empireState));
         } catch (e) {}
+    }
+
+    // Guard against multiple polling loops
+    var _pollingActive = false;
+
+    function pollForConversion(trackingId, attempt) {
+        attempt = attempt || 1;
+        if (!trackingId) return;
+        if (attempt > 30) {
+            _pollingActive = false;
+            return; // give up after ~150 seconds (30 × 5s)
+        }
+        fetch(POSTBACK_CHECK_URL + '?check_tracking_id=' + encodeURIComponent(trackingId), {
+            method: 'GET',
+            cache: 'no-store'
+        })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data && data.found) {
+                    _pollingActive = false;
+                    empireState.offerCompleted = true;
+                    saveUnlockState();
+                    tryUnlock();
+                    if (window.empireTrack) {
+                        window.empireTrack('offer_completion_confirmed', {
+                            slug: CFG.slug || null,
+                            trackingId: trackingId,
+                            attempt: attempt
+                        });
+                    }
+                } else {
+                    setTimeout(function () {
+                        pollForConversion(trackingId, attempt + 1);
+                    }, 5000);
+                }
+            })
+            .catch(function () {
+                setTimeout(function () {
+                    pollForConversion(trackingId, attempt + 1);
+                }, 5000);
+            });
+    }
+
+    function startPolling() {
+        if (_pollingActive) return;
+        if (empireState.offerCompleted) return;
+        var sid = resolveSessionId();
+        if (!sid) return;
+        _pollingActive = true;
+        if (window.empireTrack) {
+            window.empireTrack('offer_completion_polling_started', {
+                slug: CFG.slug || null,
+                trackingId: sid
+            });
+        }
+        pollForConversion(sid, 1);
     }
 
     function tryUnlock() {
@@ -276,6 +331,11 @@
         empireState.emailSubmitted = true;
         saveUnlockState();
         tryUnlock();
+        // Start polling — the CPAGrip S2S postback may already have
+        // fired or may fire while the user is on the sponsor page.
+        if (!empireState.offerCompleted) {
+            startPolling();
+        }
     };
 
     function renderOffers() {
@@ -362,21 +422,6 @@
         });
     }
 
-    function onOfferComplete() {
-        empireState.offerCompleted = true;
-        saveUnlockState();
-        tryUnlock();
-    }
-    window.cpaCallback = onOfferComplete;
-    window.cpbCallback = onOfferComplete;
-
-    try {
-        var urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('cpa') === '1' || urlParams.get('conversion') === '1') {
-            onOfferComplete();
-        }
-    } catch (e) {}
-
     var sticky = document.getElementById('sticky');
     var gateEl = document.getElementById('gate');
     function hideSticky() {
@@ -426,6 +471,13 @@
     // ── Auto-unlock for returning users (survived page reload) ──
     try { tryUnlock(); } catch (e) {}
 
+    // ── If email submitted but offer not confirmed, start polling ──
+    try {
+        if (empireState.emailSubmitted && !empireState.offerCompleted) {
+            startPolling();
+        }
+    } catch (e) {}
+
     window.EMPIRE_getOffers = function () {
         return {
             detectedGeo: geoCode,
@@ -434,6 +486,7 @@
             matched: OFFERS[geoCode + '-' + device] ? 'exact' : 'fallback',
             sessionId: resolveSessionId(),
             state: { emailSubmitted: empireState.emailSubmitted, offerCompleted: empireState.offerCompleted },
+            pollingActive: _pollingActive,
             offers: pickOffers()
         };
     };
