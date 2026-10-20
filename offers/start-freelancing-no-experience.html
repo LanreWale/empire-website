@@ -246,7 +246,8 @@ body>*{position:relative;z-index:1}
 .offer-cta{display:inline-flex;align-items:center;gap:.35rem;font-size:.72rem;font-weight:600;color:var(--c-primary);letter-spacing:.02em;transition:gap .3s var(--ease)}
 .offer-card:hover .offer-cta{gap:.6rem}
 
-.gate-unlocked{display:none;background:radial-gradient(circle at 50% 0%,rgba(22,163,74,.08) 0%,transparent 60%),linear-gradient(180deg,#ffffff,#f0fdf4);border:2px solid var(--c-success-border);border-radius:var(--r-xl);padding:3rem 2.25rem 2.5rem;text-align:center;box-shadow:0 20px 60px rgba(22,163,74,.15);animation:unlockIn .7s var(--ease-out) forwards}
+.gate-unlocked{display:none !important;background:radial-gradient(circle at 50% 0%,rgba(22,163,74,.08) 0%,transparent 60%),linear-gradient(180deg,#ffffff,#f0fdf4);border:2px solid var(--c-success-border);border-radius:var(--r-xl);padding:3rem 2.25rem 2.5rem;text-align:center;box-shadow:0 20px 60px rgba(22,163,74,.15);animation:unlockIn .7s var(--ease-out) forwards}
+.gate-unlocked.is-unlocked{display:block !important}
 @keyframes unlockIn{from{opacity:0;transform:scale(.94) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
 .unlock-check{display:flex;justify-content:center;margin-bottom:1.25rem}
 .unlock-check svg{stroke:var(--c-success);filter:drop-shadow(0 12px 24px rgba(22,163,74,.32));animation:checkPop .6s var(--ease-out)}
@@ -859,7 +860,7 @@ window.EMPIRE_OFFER_CONFIG = {
 <script src="../empire-tracker.js?v=8"></script>
 <script>window.__empireRealTrack = window.empireTrack;</script>
 <script src="/assets/js/attribution.js?v=3"></script>
-<script src="/assets/js/empire-offers.js?v=4"></script>
+<script src="/assets/js/empire-offers.js?v=6"></script>
 <script src="/assets/js/empire-ribbon.js"></script>
 
 <script>
@@ -871,7 +872,6 @@ window.EMPIRE_OFFER_CONFIG = {
 
   var cfg = window.EMPIRE_EMAIL_CONFIG || {};
   var container = document.getElementById(cfg.embedContainer || 'emailoctopus-embed');
-  var unlocked = document.getElementById('gate-unlocked');
 
   function injectEmailOctopusEmbed(){
     if (!cfg.embedScript || !container) return false;
@@ -914,12 +914,10 @@ window.EMPIRE_OFFER_CONFIG = {
     var success = container.querySelector('.emailoctopus-success, [class*="success"], [class*="thank"]');
     if (success) {
       clearInterval(successTimer);
-      if (unlocked) {
-        unlocked.style.display = 'block';
-        setTimeout(function(){
-          var y = unlocked.getBoundingClientRect().top + window.pageYOffset - 100;
-          window.scrollTo({ top: y, behavior: 'smooth' });
-        }, 200);
+      // Delegate unlock decision to empire-offers.js — it checks
+      // that BOTH email AND offer completion are satisfied.
+      if (typeof window.empireOnEmailSuccess === 'function') {
+        window.empireOnEmailSuccess();
       }
       if (typeof window.empireTrack === 'function') {
         window.empireTrack('email_form_submitted', { provider: cfg.provider || 'unknown' });
