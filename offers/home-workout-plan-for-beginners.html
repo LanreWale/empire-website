@@ -869,7 +869,7 @@ window.EMPIRE_OFFER_CONFIG = {
 <script src="../empire-tracker.js?v=8"></script>
 <script>window.__empireRealTrack = window.empireTrack;</script>
 <script src="/assets/js/attribution.js?v=3"></script>
-<script src="/assets/js/empire-offers.js?v=9"></script>
+<script src="/assets/js/empire-offers.js?v=11"></script>
 <script src="/assets/js/empire-ribbon.js"></script>
 
 <script>
@@ -919,22 +919,28 @@ window.EMPIRE_OFFER_CONFIG = {
   }
 
   // Watch for EmailOctopus success
-  var successTimer = setInterval(function(){
-    if (!container) return;
-    var success = container.querySelector('.emailoctopus-success-message:not(:empty)');
-    if (success) {
-      clearInterval(successTimer);
-      // Delegate unlock decision to empire-offers.js — it checks
-      // that BOTH email AND offer completion are satisfied.
+  /* ─── EmailOctopus success watcher ─── */
+  /* No timeout — survives long offer-completion delays (5+ min). */
+  /* Watches for the success message to have real text content. */
+  var emailSuccessFired = false;
+
+  function checkEmailSuccess() {
+    if (emailSuccessFired) return;
+    var embed = document.getElementById('emailoctopus-embed');
+    if (!embed) return;
+    var successEl = embed.querySelector('.emailoctopus-success-message');
+    if (successEl && successEl.textContent.trim().length > 0) {
+      emailSuccessFired = true;
       if (typeof window.empireOnEmailSuccess === 'function') {
         window.empireOnEmailSuccess();
       }
       if (typeof window.empireTrack === 'function') {
-        window.empireTrack('email_form_submitted', { provider: cfg.provider || 'unknown' });
+        window.empireTrack('email_form_submitted', { provider: 'emailoctopus' });
       }
     }
-  }, 500);
-  setTimeout(function(){ clearInterval(successTimer); }, 60000);
+  }
+
+  var emailSuccessTimer = setInterval(checkEmailSuccess, 1000);
 
 })();
 </script>
