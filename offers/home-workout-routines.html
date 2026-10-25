@@ -623,24 +623,6 @@ window.EMPIRE_OFFER_CONFIG = {
   slug: 'home-workout-routines',
   downloadFormat: 'pdf'
 };
-    
-    <script>
-    (function() {
-      var tagCheckInterval = setInterval(function() {
-        var form = document.querySelector('#emailoctopus-embed form');
-        if (form) {
-          clearInterval(tagCheckInterval);
-          if (!form.querySelector('input[name="tags"]')) {
-            var hiddenTag = document.createElement('input');
-            hiddenTag.type = 'hidden';
-            hiddenTag.name = 'tags';
-            hiddenTag.value = window.EMPIRE_OFFER_CONFIG.slug; 
-            form.appendChild(hiddenTag);
-          }
-        }
-      }, 500);
-    })();
-    </script>
 </script>
 
 <script src="../empire-tracker.js?v=8"></script>
