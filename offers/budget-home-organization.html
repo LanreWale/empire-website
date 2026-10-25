@@ -786,62 +786,70 @@ window.EMPIRE_OFFER_CONFIG = {
 };
     
     <script>
-    (function() {
-      // Wait for the form container to exist
-      var formContainer = document.getElementById('emailoctopus-embed');
-      if (!formContainer) return;
-
-      // Replace the "Loading..." text with our custom form
-      formContainer.innerHTML = 
-        <form id="custom-eo-form" style="display:flex; flex-direction:column; gap:10px; max-width:400px; margin:0 auto;">
-          <input type="email" id="eo-email" placeholder="Email address" required 
-                 style="padding:12px; border:1px solid #ccc; border-radius:6px; font-family:inherit; font-size:14px;">
-          <button type="submit" id="eo-submit" 
-                  style="padding:12px; background:#1d4ed8; color:#fff; border:none; border-radius:6px; font-family:inherit; font-size:14px; cursor:pointer; font-weight:600;">
-            Subscribe
-          </button>
-          <p id="eo-error" style="color:red; font-size:12px; display:none; margin:0;"></p>
-        </form>
-      ;
-
-      document.getElementById('custom-eo-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        var email = document.getElementById('eo-email').value;
-        var btn = document.getElementById('eo-submit');
-        var err = document.getElementById('eo-error');
+    window.addEventListener('load', function() {
+      var checkCount = 0;
+      var interval = setInterval(function() {
+        var formContainer = document.getElementById('emailoctopus-embed');
         
-        btn.textContent = 'Sending...';
-        btn.disabled = true;
-        err.style.display = 'none';
+        // Wait until the container exists and is visible
+        if (formContainer && formContainer.offsetParent !== null) {
+          clearInterval(interval);
+          
+          formContainer.innerHTML = 
+            <form id="custom-eo-form" style="display:flex; flex-direction:column; gap:10px; max-width:400px; margin:0 auto;">
+              <input type="email" id="eo-email" placeholder="Email address" required 
+                     style="padding:12px; border:1px solid #ccc; border-radius:6px; font-family:inherit; font-size:14px;">
+              <button type="submit" id="eo-submit" 
+                      style="padding:12px; background:#1d4ed8; color:#fff; border:none; border-radius:6px; font-family:inherit; font-size:14px; cursor:pointer; font-weight:600;">
+                Subscribe
+              </button>
+              <p id="eo-error" style="color:red; font-size:12px; display:none; margin:0;"></p>
+            </form>
+          ;
 
-        var listId = '22d20b4c-bd03-11f1-b921-dd57ba4a8d0d'; // Your List ID
-        var tag = window.EMPIRE_OFFER_CONFIG ? window.EMPIRE_OFFER_CONFIG.slug : '';
+          document.getElementById('custom-eo-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var email = document.getElementById('eo-email').value;
+            var btn = document.getElementById('eo-submit');
+            var err = document.getElementById('eo-error');
+            
+            btn.textContent = 'Sending...';
+            btn.disabled = true;
+            err.style.display = 'none';
+
+            var listId = '22d20b4c-bd03-11f1-b921-dd57ba4a8d0d';
+            var tag = window.EMPIRE_OFFER_CONFIG ? window.EMPIRE_OFFER_CONFIG.slug : '';
+            
+            fetch('https://qujlyrmatuvlpoeheqgf.supabase.co/functions/v1/eo-proxy', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: email, listId: listId, tag: tag })
+            })
+            .then(res => res.json())
+            .then(data => {
+              if (data.success) {
+                formContainer.innerHTML = '<p style="color:green; font-weight:bold; text-align:center;">Thanks for subscribing! Check your inbox.</p>';
+                if (window.empireOnEmailSuccess) window.empireOnEmailSuccess();
+              } else {
+                throw new Error(data.error || 'Subscription failed');
+              }
+            })
+            .catch(error => {
+              btn.textContent = 'Subscribe';
+              btn.disabled = false;
+              err.textContent = error.message;
+              err.style.display = 'block';
+            });
+          });
+        }
         
-        // Send to Supabase proxy function
-        fetch('https://qujlyrmatuvlpoeheqgf.supabase.co/functions/v1/eo-proxy', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: email, listId: listId, tag: tag })
-        })
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            formContainer.innerHTML = '<p style="color:green; font-weight:bold; text-align:center;">Thanks for subscribing! Check your inbox.</p>';
-            // Trigger the watcher so the unlock card shows
-            if (window.empireOnEmailSuccess) window.empireOnEmailSuccess();
-          } else {
-            throw new Error(data.error || 'Subscription failed');
-          }
-        })
-        .catch(error => {
-          btn.textContent = 'Subscribe';
-          btn.disabled = false;
-          err.textContent = error.message;
-          err.style.display = 'block';
-        });
-      });
-    })();
+        checkCount++;
+        if (checkCount > 20) clearInterval(interval); // Stop checking after 10 seconds
+      }, 500);
+    });
     </script>
+    
+    
 </script>
 
 <script src="../empire-tracker.js?v=8"></script>
