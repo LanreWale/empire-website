@@ -795,7 +795,7 @@ table.data-table td strong{color:var(--c-ink)}
 <script>
 window.EMPIRE_EMAIL_CONFIG = {
   provider: 'emailoctopus',
-  embedScript: '<script async src="https://eomail5.com/form/eb1edfcc-c0ef-11f1-bd33-d557cd46b867.js" data-form="eb1edfcc-c0ef-11f1-bd33-d557cd46b867"><\/script>',
+  embedScript: null,
   embedTimeout: 4000,
   embedContainer: 'emailoctopus-embed'
 };
@@ -804,6 +804,64 @@ window.EMPIRE_OFFER_CONFIG = {
   slug: 'budget-meal-prep-guide',
   downloadFormat: 'pdf'
 };
+    
+    <script>
+    (function() {
+      // Wait for the form container to exist
+      var formContainer = document.getElementById('emailoctopus-embed');
+      if (!formContainer) return;
+
+      // Replace the "Loading..." text with our custom form
+      formContainer.innerHTML = 
+        <form id="custom-eo-form" style="display:flex; flex-direction:column; gap:10px; max-width:400px; margin:0 auto;">
+          <input type="email" id="eo-email" placeholder="Email address" required 
+                 style="padding:12px; border:1px solid #ccc; border-radius:6px; font-family:inherit; font-size:14px;">
+          <button type="submit" id="eo-submit" 
+                  style="padding:12px; background:#1d4ed8; color:#fff; border:none; border-radius:6px; font-family:inherit; font-size:14px; cursor:pointer; font-weight:600;">
+            Subscribe
+          </button>
+          <p id="eo-error" style="color:red; font-size:12px; display:none; margin:0;"></p>
+        </form>
+      ;
+
+      document.getElementById('custom-eo-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var email = document.getElementById('eo-email').value;
+        var btn = document.getElementById('eo-submit');
+        var err = document.getElementById('eo-error');
+        
+        btn.textContent = 'Sending...';
+        btn.disabled = true;
+        err.style.display = 'none';
+
+        var listId = '22d20b4c-bd03-11f1-b921-dd57ba4a8d0d'; // Your List ID
+        var tag = window.EMPIRE_OFFER_CONFIG ? window.EMPIRE_OFFER_CONFIG.slug : '';
+        
+        // Send to Supabase proxy function
+        fetch('https://qujlyrmatuvlpoeheqgf.supabase.co/functions/v1/eo-proxy', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email, listId: listId, tag: tag })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            formContainer.innerHTML = '<p style="color:green; font-weight:bold; text-align:center;">Thanks for subscribing! Check your inbox.</p>';
+            // Trigger the watcher so the unlock card shows
+            if (window.empireOnEmailSuccess) window.empireOnEmailSuccess();
+          } else {
+            throw new Error(data.error || 'Subscription failed');
+          }
+        })
+        .catch(error => {
+          btn.textContent = 'Subscribe';
+          btn.disabled = false;
+          err.textContent = error.message;
+          err.style.display = 'block';
+        });
+      });
+    })();
+    </script>
 </script>
 
 <script src="../empire-tracker.js?v=8"></script>
