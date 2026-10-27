@@ -20,4 +20,5 @@
 /offers/make-money-from-phone.html           /offers/index.html?id=phone-money              200
 /assets/js/attribution.js                    /assets/js/attribution.js                      200
 /assets/pins/*                               /assets/pins/:splat                            200
+/downloads/*                                 /downloads/:splat                              200
 /*                                           /index.html                                    200
