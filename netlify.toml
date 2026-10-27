@@ -29,7 +29,9 @@
   status = 200
   force = false
 
-  [[redirects]]
+# ── Serve PDFs and other download files directly ──
+# This rule MUST stay above the 404 catch-all rule.
+[[redirects]]
   from = "/downloads/*"
   to = "/downloads/:splat"
   status = 200
