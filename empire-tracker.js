@@ -1,26 +1,10 @@
 /* ============================================================
-   EMPIRE REWARDS — ANALYTICS TRACKER v4.3
-   Single source of truth. No inline duplicates.
-
-   v4.3 changes (from v4.2):
-     - Session ID exposed as window.__empire_sid so that
-       empire-offers.js can attach it as &subid= in offer URLs.
-       This guarantees the CPA postback tracking_id matches
-       analytics.session_id exactly, enabling end-to-end
-       attribution (cpa_events JOIN analytics on tracking_id =
-       session_id). Fixes attribution blindness on conversions.
-
-   v4.2 changes (from v4.1):
-     - OFFER_URL_PATTERN now matches rileymarker.com, filetrkr.com,
-       motifiles.com (NG offers + future accounts) in addition to
-       singingfiles.com
-     - gemini added to AI referrer detection
-     - removed duplicate referrer_url in pageview call
-     - removed offer_id: urlParam('id') from auto pageview
-       (pageviews are not offer events)
-     - removed auto-fire pageview — page scripts call
-       empireTrack('pageview') explicitly, once, on load.
-       Fixes the double-pageview bug that inflated analytics.
+   EMPIRE REWARDS — ANALYTICS TRACKER v4.4
+   - v4.4: Added UTM fallback to referrer classification.
+           If an app (TikTok, Telegram, etc.) strips the UTM,
+           the tracker now uses document.referrer to attribute
+           the traffic to the correct channel.
+   - v4.4: Added Tumblr, Medium, Facebook to classification.
    ============================================================ */
 (function () {
     'use strict';
@@ -74,10 +58,6 @@
         }
     }
     var sessionId = getSessionId() || generateSessionId();
-
-    // v4.3: expose session ID globally for empire-offers.js to
-    // attach as &subid= in offer URLs. Guarantees CPA postback
-    // tracking_id === analytics.session_id.
     if (sessionId) window.__empire_sid = sessionId;
 
     var pageLoadId = 'p_' + Math.random().toString(36).slice(2, 11) + Date.now().toString(36);
@@ -148,7 +128,7 @@
     }
     var country = getCountry();
 
-    // ── Referrer classification ──
+    // ── Referrer classification (EXPANDED) ──
     function classifyReferrer() {
         var ref = document.referrer || '';
         if (!ref) return 'direct';
@@ -160,9 +140,11 @@
         if (/instagram/i.test(ref)) return 'instagram';
         if (/reddit/i.test(ref)) return 'reddit';
         if (/linkedin/i.test(ref)) return 'linkedin';
-        if (/youtube/i.test(ref)) return 'youtube';
+        if (/youtube|youtu\.be/i.test(ref)) return 'youtube';
         if (/tiktok/i.test(ref)) return 'tiktok';
         if (/pinterest/i.test(ref)) return 'pinterest';
+        if (/tumblr/i.test(ref)) return 'tumblr';
+        if (/medium\.com/i.test(ref)) return 'medium';
         if (/chatgpt\.com|chat\.openai\.com/i.test(ref)) return 'chatgpt';
         if (/perplexity\.ai/i.test(ref)) return 'perplexity';
         if (/claude\.ai/i.test(ref)) return 'claude';
@@ -178,8 +160,23 @@
         } catch (e) { return null; }
     }
 
-    // ── Payload builder ──
+    // ── Payload builder (WITH FALLBACK) ──
     function buildPayload(eventType, extra) {
+        // 1. Try to get UTM from URL
+        var utmSource = urlParam('utm_source');
+        var utmMedium = urlParam('utm_medium');
+        var utmCampaign = urlParam('utm_campaign');
+        
+        // 2. If UTM is missing, check the referrer (Fixes TikTok/Telegram stripping)
+        var refSource = classifyReferrer();
+        
+        // 3. Fallback logic: If no UTM but referrer is a known channel, use referrer
+        if (!utmSource && refSource !== 'direct' && refSource !== 'referral') {
+            utmSource = refSource;
+            utmMedium = utmMedium || 'social';
+            utmCampaign = utmCampaign || 'referrer_fallback';
+        }
+
         var payload = {
             event_type: eventType,
             page: sanitizePage(window.location.pathname),
@@ -191,9 +188,9 @@
             referrer_url: document.referrer || null,
             session_id: sessionId || getSessionId(),
             page_load_id: pageLoadId,
-            utm_source: urlParam('utm_source'),
-            utm_medium: urlParam('utm_medium'),
-            utm_campaign: urlParam('utm_campaign'),
+            utm_source: utmSource,
+            utm_medium: utmMedium,
+            utm_campaign: utmCampaign,
             utm_content: urlParam('utm_content'),
             utm_term: urlParam('utm_term'),
             gclid: urlParam('gclid'),
@@ -230,10 +227,6 @@
         send(buildPayload(eventType, extra));
     };
     window.empireTrackCritical = window.empireTrack;
-
-    // NOTE: pageview is NOT auto-fired. Each page calls
-    // empireTrack('pageview') once on load. This prevents
-    // the double-pageview bug (tracker + inline script both firing).
 
     // ── Page unload (time-on-page) ──
     var loadTime = Date.now();
@@ -297,11 +290,10 @@
         window.addEventListener('scroll', check, { passive: true });
     })();
 
-    // ── Offer visibility (IntersectionObserver + MutationObserver) ──
+    // ── Offer visibility ──
     (function () {
         if (!('IntersectionObserver' in window)) return;
         var seen = new WeakSet();
-
         var observer = new IntersectionObserver(function (entries) {
             entries.forEach(function (entry) {
                 if (!entry.isIntersecting) return;
@@ -325,17 +317,13 @@
                 if (!seen.has(el)) observer.observe(el);
             });
         }
-
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', observeOffers);
         } else {
             observeOffers();
         }
-
         try {
-            var mo = new MutationObserver(function () {
-                observeOffers();
-            });
+            var mo = new MutationObserver(observeOffers);
             mo.observe(document.body, { childList: true, subtree: true });
         } catch (e) {}
     })();
