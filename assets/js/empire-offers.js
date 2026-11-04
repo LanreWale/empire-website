@@ -242,7 +242,27 @@
             }
         } catch (e) {}
         return { emailSubmitted: false, offerCompleted: false };
-    })();
+    
+    
+                    var emailInput = document.getElementById('eo-email');
+                    if (emailInput) emailInput.focus();
+                }
+            }, 300);
+        };
+        
+        // Create iframe
+        var iframe = document.createElement('iframe');
+        iframe.src = url;
+        iframe.style.cssText = 'width:90%;max-width:800px;height:75%;background:white;border-radius:12px;border:none;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
+        
+        modal.appendChild(closeBtn);
+        modal.appendChild(iframe);
+        document.body.appendChild(modal);
+        
+        try { sessionStorage.setItem('empire_pending_unlock', 'true'); } catch(err) {}
+    });
+
+})();
 
     function saveUnlockState() {
         try {
@@ -351,7 +371,7 @@
             var currentUrl = window.location.origin + window.location.pathname;
         var redirectUrl = encodeURIComponent(currentUrl + '?unlocked=1');
         var clickUrl = o.url + subidSuffix + '&redirect=' + redirectUrl;
-            html += '<a href="' + clickUrl + '" target="_blank" rel="nofollow noopener noreferrer" class="offer-card' + (o.recommended ? ' recommended' : '') + '"';
+            html += '<a href="' + clickUrl + '" target="_blank" rel="nofollow noopener noreferrer" class="offer-card empire-offer-link empire-offer-link' + (o.recommended ? ' recommended' : '') + '"';
             html += ' data-offer-id="' + escapeAttr(o.offerId || '') + '"';
             html += ' data-offer-title="' + escapeAttr(o.title) + '"';
             html += ' data-offer-tag="' + escapeAttr(o.tag) + '">';
@@ -459,7 +479,27 @@
             });
         }, { threshold: 0.08, rootMargin: '0px 0px -50px 0px' });
         sections.forEach(function (s) { obs2.observe(s); });
-    })();
+    
+    
+                    var emailInput = document.getElementById('eo-email');
+                    if (emailInput) emailInput.focus();
+                }
+            }, 300);
+        };
+        
+        // Create iframe
+        var iframe = document.createElement('iframe');
+        iframe.src = url;
+        iframe.style.cssText = 'width:90%;max-width:800px;height:75%;background:white;border-radius:12px;border:none;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
+        
+        modal.appendChild(closeBtn);
+        modal.appendChild(iframe);
+        document.body.appendChild(modal);
+        
+        try { sessionStorage.setItem('empire_pending_unlock', 'true'); } catch(err) {}
+    });
+
+})();
 
     document.querySelectorAll('[data-unlock-trigger]').forEach(function (btn) {
         btn.addEventListener('click', function () {
@@ -495,4 +535,78 @@
         };
     };
 
+
+    
+                    var emailInput = document.getElementById('eo-email');
+                    if (emailInput) emailInput.focus();
+                }
+            }, 300);
+        };
+        
+        // Create iframe
+        var iframe = document.createElement('iframe');
+        iframe.src = url;
+        iframe.style.cssText = 'width:90%;max-width:800px;height:75%;background:white;border-radius:12px;border:none;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
+        
+        modal.appendChild(closeBtn);
+        modal.appendChild(iframe);
+        document.body.appendChild(modal);
+        
+        try { sessionStorage.setItem('empire_pending_unlock', 'true'); } catch(err) {}
+    });
+
+
+    // ── Modal Iframe Logic for Seamless Conversion ──
+    document.addEventListener('click', function(e) {
+        var link = e.target.closest('.empire-offer-link');
+        if (!link) return;
+        
+        e.preventDefault(); // Stop the default new tab behavior
+        
+        var url = link.getAttribute('href');
+        
+        // Create modal overlay
+        var modal = document.createElement('div');
+        modal.id = 'empire-offer-modal';
+        modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:999999;display:flex;flex-direction:column;align-items:center;justify-content:center;';
+        
+        // Create close button
+        var closeBtn = document.createElement('button');
+        closeBtn.innerHTML = '&times; Close Offer & Get Download';
+        closeBtn.style.cssText = 'position:absolute;top:20px;right:20px;background:#ef4444;color:white;border:none;padding:12px 24px;border-radius:8px;font-size:16px;font-weight:bold;cursor:pointer;z-index:1000000;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
+        closeBtn.onclick = function() {
+            modal.remove();
+            // Trigger the email form opening logic
+            var emailCard = document.getElementById('email-capture-card');
+            var divider = document.getElementById('unlock-divider');
+            if (emailCard) {
+                emailCard.style.display = 'block';
+                emailCard.style.opacity = '1';
+                emailCard.style.transform = 'translateY(0)';
+            }
+            if (divider) {
+                divider.style.display = 'flex';
+                divider.style.opacity = '1';
+            }
+            setTimeout(function() {
+                if (emailCard) {
+                    var y = emailCard.getBoundingClientRect().top + window.pageYOffset - 120;
+                    window.scrollTo({ top: y, behavior: 'smooth' });
+                    var emailInput = document.getElementById('eo-email');
+                    if (emailInput) emailInput.focus();
+                }
+            }, 300);
+        };
+        
+        // Create iframe
+        var iframe = document.createElement('iframe');
+        iframe.src = url;
+        iframe.style.cssText = 'width:90%;max-width:800px;height:75%;background:white;border-radius:12px;border:none;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
+        
+        modal.appendChild(closeBtn);
+        modal.appendChild(iframe);
+        document.body.appendChild(modal);
+        
+        try { sessionStorage.setItem('empire_pending_unlock', 'true'); } catch(err) {}
+    });
 })();
