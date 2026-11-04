@@ -850,7 +850,7 @@ window.EMPIRE_OFFER_CONFIG = {
 <script src="../empire-tracker.js?v=9"></script>
 <script>window.__empireRealTrack = window.empireTrack;</script>
 <script src="/assets/js/attribution.js?v=3"></script>
-<script src="/assets/js/empire-offers.js?v=11"></script>
+<script src="/assets/js/empire-offers.js?v=10"></script>
 <script src="/assets/js/empire-ribbon.js"></script>
 
 <script>
@@ -1041,5 +1041,34 @@ window.EMPIRE_OFFER_CONFIG = {
         });
     });
     </script>
+<script>
+
+    // ── Return from CPAGrip handling ──
+    (function() {
+        if (window.location.search.includes('unlocked=1')) {
+            var emailCard = document.getElementById('email-capture-card');
+            var divider = document.getElementById('unlock-divider');
+            
+            if (emailCard) {
+                emailCard.style.display = 'block';
+                emailCard.style.opacity = '1';
+                emailCard.style.transform = 'translateY(0)';
+            }
+            if (divider) {
+                divider.style.display = 'flex';
+                divider.style.opacity = '1';
+            }
+            
+            setTimeout(function() {
+                if (emailCard) {
+                    var y = emailCard.getBoundingClientRect().top + window.pageYOffset - 120;
+                    window.scrollTo({ top: y, behavior: 'smooth' });
+                    var emailInput = document.getElementById('eo-email');
+                    if (emailInput) emailInput.focus();
+                }
+            }, 600);
+        }
+    })();
+</script>
 </body>
 </html>
