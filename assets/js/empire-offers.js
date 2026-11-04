@@ -373,7 +373,9 @@
         grid.querySelectorAll('.offer-card').forEach(function (card) {
             card.addEventListener('click', function () {
                 try {
-                    window.dispatchEvent(new CustomEvent('empire_offer_clicked', {
+                    // Set the pending unlock flag for the fallback
+                try { sessionStorage.setItem('empire_pending_unlock', 'true'); } catch(e) {}
+                window.dispatchEvent(new CustomEvent('empire_offer_clicked', {
                         detail: {
                             offerId: card.getAttribute('data-offer-id') || null,
                             offerTitle: card.getAttribute('data-offer-title') || null,
