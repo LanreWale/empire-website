@@ -362,7 +362,7 @@
             html += '</div></div>';
             html += '<div class="offer-footer">';
             html += '<span class="offer-payout">&#10003; ' + o.sponsor + '</span>';
-            html += '<span class="offer-cta">Start now &rarr;</span>';
+            html += '<span class="offer-cta" style="font-weight:700;">Do this first &rarr;</span>';
             html += '</div>';
             html += '</a>';
         });
