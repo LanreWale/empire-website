@@ -474,7 +474,7 @@
             
             // ── NEW: Tell the dashboard the unlock was shown ──
             if (window.empireTrack && window.EMPIRE_OFFER_CONFIG) {
-                window.empireTrack('unlock_shown', { slug: window.EMPIRE_OFFER_CONFIG.slug });
+                window.empireTrack('unlock_shown');
             }
             // ───────────────────────────────────────────────────
 
