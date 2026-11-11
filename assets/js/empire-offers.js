@@ -1,12 +1,6 @@
 /* ============================================================
    EMPIRE REWARDS — SHARED OFFER PAGE LOGIC v4.3.3
    Load AFTER attribution.js and empire-tracker.js.
-
-   Requires window.EMPIRE_OFFER_CONFIG = { slug: 'page-slug' }
-
-   v4.3.3 changes:
-     - Fixed encoding issues with emojis.
-     - Added 'unlock_shown' tracking event to the modal close button.
    ============================================================ */
 (function () {
     'use strict';
@@ -16,7 +10,6 @@
     var BASE_SINGING = 'https://singingfiles.com/show.php?l=0&u=2548035&id=';
     var BASE_RILEY   = 'https://rileymarker.com/show.php?l=0&u=1533836&id=';
 
-    // Supabase Edge Function endpoint for conversion status checks
     var POSTBACK_CHECK_URL = 'https://qujlyrmatuvlpoeheqgf.supabase.co/functions/v1/cpa-postback-receiver';
 
     var OFFERS = {
@@ -196,9 +189,6 @@
         } catch (e) { return ''; }
     }
 
-    // ============================================================
-    // UNLOCK GATE — REQUIRES BOTH email submit AND offer completion
-    // ============================================================
     var STORAGE_KEY = 'empire_unlock_state_v432_' + (CFG.slug || 'default');
 
     var empireState = (function () {
@@ -314,10 +304,12 @@
         var sid = resolveSessionId();
         var subidSuffix = sid ? '&subid=' + encodeURIComponent(sid) : '';
 
+        // Add redirect URL
+        var currentUrl = window.location.origin + window.location.pathname;
+        var redirectUrl = encodeURIComponent(currentUrl + '?unlocked=1');
+
         var html = '';
         list.forEach(function (o) {
-            var currentUrl = window.location.origin + window.location.pathname;
-            var redirectUrl = encodeURIComponent(currentUrl + '?unlocked=1');
             var clickUrl = o.url + subidSuffix + '&redirect=' + redirectUrl;
             html += '<a href="' + clickUrl + '" target="_blank" rel="nofollow noopener noreferrer" class="offer-card' + (o.recommended ? ' recommended' : '') + '"';
             html += ' data-offer-id="' + escapeAttr(o.offerId || '') + '"';
@@ -438,10 +430,8 @@
         });
     });
 
-    // ── Auto-unlock for returning users (survived page reload) ──
     try { tryUnlock(); } catch (e) {}
 
-    // ── If email submitted but offer not confirmed, start polling ──
     try {
         if (empireState.emailSubmitted && !empireState.offerCompleted) {
             startPolling();
@@ -461,7 +451,6 @@
         };
     };
 
-
     // ── Modal Iframe Logic for Seamless Conversion ──
     document.addEventListener('click', function(e) {
         var link = e.target.closest('.offer-card');
@@ -470,7 +459,7 @@
         var href = link.getAttribute('href');
         if (!href || href.indexOf('show.php') === -1) return;
         
-        e.preventDefault();
+        e.preventDefault(); // Stop the default new tab behavior
         
         var modal = document.createElement('div');
         modal.id = 'empire-offer-modal';
@@ -479,13 +468,15 @@
         var closeBtn = document.createElement('button');
         closeBtn.innerHTML = '&times; Close Offer & Get Download';
         closeBtn.style.cssText = 'position:absolute;top:20px;right:20px;background:#ef4444;color:white;border:none;padding:12px 24px;border-radius:8px;font-size:16px;font-weight:bold;cursor:pointer;z-index:1000000;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
+        
         closeBtn.onclick = function() {
             modal.remove();
             
-            // Track the unlock event for analytics
-            if (window.empireTrack) {
-                window.empireTrack('unlock_shown', { slug: CFG.slug || null });
+            // ── NEW: Tell the dashboard the unlock was shown ──
+            if (window.empireTrack && window.EMPIRE_OFFER_CONFIG) {
+                window.empireTrack('unlock_shown', { slug: window.EMPIRE_OFFER_CONFIG.slug });
             }
+            // ───────────────────────────────────────────────────
 
             var emailCard = document.getElementById('email-capture-card');
             var divider = document.getElementById('unlock-divider');
@@ -518,4 +509,5 @@
         
         try { sessionStorage.setItem('empire_pending_unlock', 'true'); } catch(err) {}
     });
+
 })();
