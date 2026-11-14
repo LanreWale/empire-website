@@ -466,7 +466,7 @@
         modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:999999;display:flex;flex-direction:column;align-items:center;justify-content:center;';
         
         var closeBtn = document.createElement('button');
-        closeBtn.innerHTML = '&times; Close Offer & Get Download';
+        closeBtn.innerHTML = '&#10003; I Finished the Offer - Get My Download';
         closeBtn.style.cssText = 'position:absolute;top:20px;right:20px;background:#ef4444;color:white;border:none;padding:12px 24px;border-radius:8px;font-size:16px;font-weight:bold;cursor:pointer;z-index:1000000;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
         
         closeBtn.onclick = function() {
