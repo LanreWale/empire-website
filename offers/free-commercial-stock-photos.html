@@ -159,5 +159,15 @@ body::before{
   <p>Empire Rewards &middot; 2, Baba Abiye Junction, Off Awo Ogbaagba Road, Iwoye, Osun State, Nigeria</p>
 </footer>
 
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    var unlockBtn = document.querySelector('.gate-btn');
+    if (!unlockBtn) return;
+    var uniqueId = 'cpa_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+    var originalUrl = unlockBtn.href;
+    var separator = originalUrl.includes('?') ? '&' : '?';
+    unlockBtn.href = originalUrl + separator + 'tracking_id=' + uniqueId;
+});
+</script>
 </body>
 </html>

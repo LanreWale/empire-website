@@ -756,6 +756,16 @@ body>*{position:relative;z-index:1}
 <script src="/empire-tracker.js?v=7"></script>
 
 <script async src="https://eomail6.com/form/eb1edfcc-c0ef-11f1-bd33-d557cd46b867.js" data-form="eb1edfcc-c0ef-11f1-bd33-d557cd46b867"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    var unlockBtn = document.querySelector('.gate-btn');
+    if (!unlockBtn) return;
+    var uniqueId = 'cpa_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+    var originalUrl = unlockBtn.href;
+    var separator = originalUrl.includes('?') ? '&' : '?';
+    unlockBtn.href = originalUrl + separator + 'tracking_id=' + uniqueId;
+});
+</script>
 </body>
 </html>
 
