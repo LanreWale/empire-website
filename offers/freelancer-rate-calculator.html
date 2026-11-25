@@ -183,5 +183,20 @@ document.addEventListener("DOMContentLoaded", function() {
     unlockBtn.href = originalUrl + separator + 'tracking_id=' + uniqueId;
 });
 </script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    var unlockBtn = document.querySelector('.gate-btn');
+    if (!unlockBtn) return;
+
+    var uniqueId = 'cpa_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+
+    fetch('https://qujlyrmatuvlpoeheqgf.supabase.co/functions/v1/cpa-postback-receiver?register_session=' + uniqueId)
+        .catch(function(e) { console.log("Session ping failed", e); });
+
+    var originalUrl = unlockBtn.href;
+    var separator = originalUrl.includes('?') ? '&' : '?';
+    unlockBtn.href = originalUrl + separator + 'tracking_id=' + uniqueId;
+});
+</script>
 </body>
 </html>
